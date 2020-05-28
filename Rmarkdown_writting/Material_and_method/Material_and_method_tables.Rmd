@@ -1,0 +1,57 @@
+---
+title: "Material and Method"
+author: "Microbiome group"
+date: "26/05/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(readr)
+library(tidyr)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r samples_table, echo=TRUE}
+(samples <- read_csv("Samples.csv") %>%
+# The two last rows must be deleted because they explain ECe
+  head(-2) %>%
+  
+  # rename the columns with spaces
+  rename(c("site_id" = "Site number", "pH_water" = "pHwater (bulk soil)", "Altitude" = "Altitude (m)"))
+
+# Split the sample names columns in two parts, one for the bulk, the other one for the rhizosphere
+  separate("Sample name of bulk/rhizopheric soils", c("bulk", "rhizo"), sep = "/") %>%
+# Split the ECe in two parts, one for bulk, the other one for rhizosphere
+  separate("ECe of bulk/rhizopheric soils", c("ECe_bulk", "ECe_rhizo"), sep = "/") %>%
+# group all the sample's id and ECE values together
+  pivot_longer(cols = c("bulk","rhizo"), names_to = "sample_type", values_to = "sample_id") %>%
+  pivot_longer(cols = c("ECe_bulk","ECe_rhizo"), names_to = "ECe_type", values_to = "ECe_value" ) 
+)
+# delete the doubles
+
+samples_def <- filter(samples, (sample_type=="bulk" & ECe_type=="ECe_bulk")|(sample_type=="rhizo" & ECe_type=="ECe_rhizo")) %>% 
+  filter(sample_type != "rhizo" & )
+  
+  
+
+
+
+  
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
