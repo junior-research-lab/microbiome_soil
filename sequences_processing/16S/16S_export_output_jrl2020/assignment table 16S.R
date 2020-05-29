@@ -22,7 +22,7 @@ assignment_table <- rename(assignment_table, "Feature_ID"="Feature ID")
 
 # Selecting only the taxon and samples columns + Removing B-2-3, EstCont and MockCom
 
-(assignment_table <- select(assignment_table, -Feature_ID, -Confidence, -ExtCont, -MockCom))
+(assignment_table <- select(assignment_table, -Feature_ID, -PCRCont, -Confidence, -ExtCont, -MockCom))
 
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
 
