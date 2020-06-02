@@ -25,10 +25,11 @@ getwd()
 
 assignment_table <- rename(assignment_table, "Feature_ID"="Feature ID")
 assignment_table <- rename(assignment_table, "B_3_1"="B-3-1")
+assignment_table <- rename(assignment_table, "B_5_2"="B-5-2")
 
-# Selecting only the taxon and samples columns + Removing B-2-1, EstCont and MockCom
+# Selecting only the taxon and samples columns +  EstCont and MockCom + B_3_1 + B_5_2
 
-(assignment_table <- select(assignment_table, -Feature_ID, -PCRCont, -Confidence, -ExtCont, -MockCom, -B_3_1))
+(assignment_table <- select(assignment_table, -Feature_ID, -PCRCont, -Confidence, -ExtCont, -MockCom, -B_3_1, -B_5_2))
 
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
 
@@ -42,7 +43,7 @@ View(t_assignment_table)
 S <- specnumber(t_assignment_table)
 raremax <- min(rowSums(t_assignment_table))
 Srare <- rarefy(t_assignment_table, raremax)
-plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied of OTU")
 abline(0,1)
 rarecurve(t_assignment_table, step = 20, sample = raremax, col = "blue", cex = 0.6)
 
