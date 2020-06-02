@@ -1,8 +1,11 @@
 library(readr)
 library(dplyr)
-install.packages("vegan")
 library(vegan)
 library(tidyr)
+install.packages("openxlsx")
+install.packages("rio")
+library(rio)
+library(openxlsx)
 
 # Importing the tables to merge and skip the first line for feature
 
@@ -15,14 +18,17 @@ View(feature_table)
 
 assignment_table <- merge(taxonomy_table, feature_table, by.x = "Feature ID", "#OTU ID")
 View(assignment_table)
+export(assignment_table, "assignment.table.xlsx")
+getwd()
 
 # Changing names
 
 assignment_table <- rename(assignment_table, "Feature_ID"="Feature ID")
+assignment_table <- rename(assignment_table, "B_3_1"="B-3-1")
 
-# Selecting only the taxon and samples columns + Removing B-2-3, EstCont and MockCom
+# Selecting only the taxon and samples columns + Removing B-2-1, EstCont and MockCom
 
-(assignment_table <- select(assignment_table, -Feature_ID, -PCRCont, -Confidence, -ExtCont, -MockCom))
+(assignment_table <- select(assignment_table, -Feature_ID, -PCRCont, -Confidence, -ExtCont, -MockCom, -B_3_1))
 
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
 
