@@ -39,8 +39,10 @@ samples$ECe_value <- as.numeric(samples$ECe_value)
 (samples_def <- filter(samples, (sample_type=="bulk" & ECe_type=="ECe_bulk")|(sample_type=="rhizo" & ECe_type=="ECe_rhizo")) %>% 
   mutate(pH_water = ifelse(sample_type == "rhizo", NA, pH_water))) %>%  #we delete the pH value from the rhizo types
 
-#select the columns you want to print
+#change the values of the ECe : Siti and John used the coefficient 6.5 and we want tu use 6.75
+  mutate(ECe_value = ECe_value*6.75/6.5) %>% 
   select(sample_id, Longitude, Latitude, pH_water, ECe_value)
+
 
 
 #print all the rows
