@@ -2,6 +2,7 @@ library(readr)
 library(dplyr)
 library(vegan)
 library(tidyr)
+library(openxlsx)
 
 # Importing the tables to merge and skip the first line for feature
 
@@ -32,6 +33,8 @@ taxa_assignment_table$Family <-  gsub(";","",taxa_assignment_table$Family)
 taxa_assignment_table$Gender <-  gsub(";","",taxa_assignment_table$Gender)
 taxa_assignment_table$Kingdom <-  gsub(";","",taxa_assignment_table$Kingdom)
 taxa_assignment_table$Kingdom <-  gsub("k__","",taxa_assignment_table$Kingdom)
+View(taxa_assignment_table)
+
 
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
 
