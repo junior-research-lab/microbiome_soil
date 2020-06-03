@@ -1,0 +1,32 @@
+---
+title: "ITS2-Analyse-controls"
+author: "JRL"
+date: "03/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+```
+
+
+```{r import_assignment_table, echo=FALSE}
+(assignment_table <- read.xlsx("ITS2_assignment_table.xlsx"))
+```
+
+
+```{r list_contaminated_OTU, echo=FALSE}
+(tot_read_PCR <- select(assignment_table, PCRCont) %>% 
+  colSums())
+(assignment_table %>% filter(PCRCont !=0) %>% 
+  mutate(pct_cont_OTU_PCR = (PCRCont/tot_read_PCR)*100))
+
+```
+
+Only two OTU contaminated the samples at the PCR step (We have no contaminants in External contaminant sample)
+
+```{r}
+
+```
+
