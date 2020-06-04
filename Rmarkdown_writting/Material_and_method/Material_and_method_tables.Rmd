@@ -49,4 +49,9 @@ samples$ECe_value <- as.numeric(samples$ECe_value)
 print(samples_def, n = 50)
  
 ```
+```{r export_ECe_values}
+library(openxlsx)
+library(rio)
+export(samples_def,"sample_table_with_new_ECe_values.xlsx")
+```
 
