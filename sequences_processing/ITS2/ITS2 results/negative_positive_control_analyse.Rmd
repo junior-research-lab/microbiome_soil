@@ -8,6 +8,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(readr)
+library(dplyr)
+library(openxlsx)
 ```
 
 
@@ -26,7 +28,28 @@ library(readr)
 
 Only two OTU contaminated the samples at the PCR step (We have no contaminants in External contaminant sample)
 
+
 ```{r}
+#First, we select the columns we want to work with : all the samples (grep function) and PCRCont (which function)
+assignment_table_comp <- assignment_table[,c(which(colnames(assignment_table)=="PCRCont"),
+                                            grep("[\\-]", colnames(assignment_table)))]
+
+#We create a vector containing the name of the columns for the percentage of contamination. So the vector is 47 length
+varnames <- paste(colnames(assignment_table_comp)[-1], "pct","cont", sep = "_")
+
+#We calculate ther percentage, i.e. PCRCont reads divided by the reads in one sample for one contaminated OTU
+calculated_pct <- ( assignment_table_comp$PCRCont / assignment_table_comp[,2:length(assignment_table_comp)]  ) * 100
+
+#We rename the columns of the data frame 'calculated_pct' with the names we put in varnames
+names(calculated_pct) <- varnames
+
+#The result is a data frame with the name of the contaminatde OTU and the percentage of contamination for each sample
+(res <- cbind(assignment_table[,c(1:7,
+                                  which(colnames(assignment_table)=="PCRCont" ))],
+                                calculated_pct) %>% 
+      filter(PCRCont !=0)
+)
 
 ```
+
 
