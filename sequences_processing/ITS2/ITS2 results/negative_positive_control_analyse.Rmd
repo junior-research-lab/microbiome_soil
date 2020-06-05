@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(readr)
 library(dplyr)
 library(openxlsx)
+library(expss)
 ```
 
 
@@ -27,6 +28,8 @@ library(openxlsx)
 ```
 
 Only two OTU contaminated the samples at the PCR step (We have no contaminants in External contaminant sample)
+
+
 
 
 ```{r}
@@ -49,7 +52,56 @@ names(calculated_pct) <- varnames
                                 calculated_pct) %>% 
       filter(PCRCont !=0)
 )
-
 ```
+These two OTU have contaminated the PCRCont samples. 
+
+# Hilights wich OTU are the more biaised
+
+## Number of samples overrating 100 % of contamination
+
+```{r hilight}
+
+# Change the Inf in NA
+
+res <- na_if(res, Inf)
+
+#Transpose the matrix so that we can easily play with the numbers
+
+  (t_res <- data.frame(t(res[-c(1:7)])))
+  list_colnames <- list()
+  for (i in c(1:dim(res)[1])) {
+    list_colnames[i] <- paste(res[i,1], res[i,2], res[i,3], res[i,4], res[i,5], res[i,6], res[i,7], sep ="_")
+  }
+  colnames(t_res) <- list_colnames
+
+# Show the number of times samples have a contamination percentage higher than 100 %
+
+(nb_hundred_samples <- 
+    cbind(data.frame(rownames(t_res)),
+          data.frame(count_row_if(function(x) x>=100, t_res))) %>% 
+    rename("Samples" = 1, "Count" = 2)
+)
+  
+# Add the average contamination of the sample
+  
+  
+```
+
+
+## Average contamination for each sample
+
+
+```{r}
+# The same for the otu
+  
+(nb_hundred_otu <- 
+  cbind(data.frame(colnames(t_res)),
+        data.frame(count_col_if(function(x) x>=100, t_res))) %>% 
+  rename("OTU" = 1, "Count" = 2)
+)
+```
+
+
+
 
 
