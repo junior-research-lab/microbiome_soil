@@ -79,7 +79,8 @@ res <- na_if(res, Inf)
 (nb_hundred_samples <- 
     cbind(data.frame(rownames(t_res)),
           data.frame(count_row_if(function(x) x>=100, t_res))) %>% 
-    rename("Samples" = 1, "Count" = 2)
+    rename("Samples" = 1, "Count" = 2) %>% 
+    arrange(desc(Count))
 )
   
 # Add the average contamination of the sample
@@ -97,7 +98,8 @@ res <- na_if(res, Inf)
 (nb_hundred_otu <- 
   cbind(data.frame(colnames(t_res)),
         data.frame(count_col_if(function(x) x>=100, t_res))) %>% 
-  rename("OTU" = 1, "Count" = 2)
+  rename("OTU" = 1, "Count" = 2)%>%
+  arrange(desc(Count))
 )
 ```
 
