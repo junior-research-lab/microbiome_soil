@@ -54,4 +54,4 @@ plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species
 abline(0,1)
 rarecurve(t_assignment_table, step = 20, sample = raremax, col = "blue", cex = 0.6, ylab = "OTU number")
 
-
+rarefied_df <- rrarefy(t_assignment_table,raremax)
