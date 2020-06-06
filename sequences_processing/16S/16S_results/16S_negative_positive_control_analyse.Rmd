@@ -1,0 +1,151 @@
+---
+title: "Untitled"
+author: "JRL"
+date: "03/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(openxlsx)
+install.packages("expss")
+library(expss)
+```
+
+
+```{r taxa_assignment_table, echo=FALSE}
+library(readxl)
+(taxa_assignment_table <- read_excel("taxa_assignment_table.xlsx"))
+View(taxa_assignment_table)
+
+```
+```{r list_contaminated_OTU, echo=FALSE}
+(tot_read_PCR <- select(taxa_assignment_table, PCRCont) %>% 
+  colSums())
+(taxa_assignment_table %>% filter(PCRCont !=0) %>% 
+  mutate(pct_cont_OTU_PCR = (PCRCont/tot_read_PCR)*100))
+```
+
+Only two OTU contaminated the samples at the PCR step (We have no contaminants in External contaminant sample)
+
+```{r list_contaminated_OTU, echo=FALSE}
+(tot_read_ExtCont <- select(taxa_assignment_table, ExtCont) %>% 
+  colSums())
+(taxa_assignment_table %>% filter(ExtCont !=0) %>% 
+  mutate(ext_cont_OTU_PCR = (ExtCont/tot_read_PCR)*100))
+```
+```{r list_contaminated_OTU, echo=FALSE}
+(tot_read_MockCom <- select(taxa_assignment_table, MockCom) %>% 
+  colSums())
+(taxa_assignment_table %>% filter(MockCom !=0) %>% 
+  mutate(mock_com_OTU_PCR = (MockCom/tot_read_PCR)*100))
+```
+
+Only two OTU contaminated the samples at the PCR step (We have no contaminants in External contaminant sample)
+
+
+```{r}
+#First, we select the columns we want to work with : all the samples (grep function) and PCRCont (which function)
+assignment_table_comp <- taxa_assignment_table[,c
+                                          (which(colnames(taxa_assignment_table)=="PCRCont"),
+                                            grep("[\\-]", colnames(taxa_assignment_table)))]
+#We create a vector containing the name of the columns for the percentage of contamination. So the vector is 47 length
+varnames <- paste(colnames(assignment_table_comp)[-1], "pct","cont", sep = "_")
+#We calculate ther percentage, i.e. PCRCont reads divided by the reads in one sample for one contaminated OTU
+calculated_pct <- ( assignment_table_comp$PCRCont / assignment_table_comp[,2:length(assignment_table_comp)]  ) * 100
+#We rename the columns of the data frame 'calculated_pct' with the names we put in varnames
+names(calculated_pct) <- varnames
+#The result is a data frame with the name of the contaminatde OTU and the percentage of contamination for each sample
+(res <- cbind(taxa_assignment_table[,c(1:7,
+                                  which(colnames(taxa_assignment_table)=="PCRCont" ))],
+                                calculated_pct) %>% 
+      filter(PCRCont !=0)
+)
+```
+```{r}
+#First, we select the columns we want to work with : all the samples (grep function) and ExtCont (which function)
+assignment_table_comp <- taxa_assignment_table[,c
+                                          (which(colnames(taxa_assignment_table)=="ExtCont"),
+                                            grep("[\\-]", colnames(taxa_assignment_table)))]
+#We create a vector containing the name of the columns for the percentage of contamination. So the vector is 47 length
+varnames <- paste(colnames(assignment_table_comp)[-1], "ext","cont", sep = "_")
+#We calculate ther percentage, i.e. ExtCont reads divided by the reads in one sample for one contaminated OTU
+calculated_pct <- ( assignment_table_comp$ExtCont / assignment_table_comp[,2:length(assignment_table_comp)]  ) * 100
+#We rename the columns of the data frame 'calculated_pct' with the names we put in varnames
+names(calculated_pct) <- varnames
+#The result is a data frame with the name of the contaminatde OTU and the percentage of contamination for each sample
+(res <- cbind(taxa_assignment_table[,c(1:7,
+                                  which(colnames(taxa_assignment_table)=="ExtCont" ))],
+                                calculated_pct) %>% 
+      filter(ExtCont !=0)
+)
+```
+
+```{r}
+#First, we select the columns we want to work with : all the samples (grep function) and MockComt (which function)
+assignment_table_comp <- taxa_assignment_table[,c
+                                          (which(colnames(taxa_assignment_table)=="MockCom"),
+                                            grep("[\\-]", colnames(taxa_assignment_table)))]
+#We create a vector containing the name of the columns for the percentage of contamination. So the vector is 47 length
+varnames <- paste(colnames(assignment_table_comp)[-1], "mock","com", sep = "_")
+#We calculate ther percentage, i.e. PCRCont reads divided by the reads in one sample for one contaminated OTU
+calculated_pct <- ( assignment_table_comp$MockCom / assignment_table_comp[,2:length(assignment_table_comp)]  ) * 100
+#We rename the columns of the data frame 'calculated_pct' with the names we put in varnames
+names(calculated_pct) <- varnames
+#The result is a data frame with the name of the contaminatde OTU and the percentage of contamination for each sample
+(res <- cbind(taxa_assignment_table[,c(1:7,
+                                  which(colnames(taxa_assignment_table)=="MockCom" ))],
+                                calculated_pct) %>% 
+      filter(MockCom !=0)
+)
+```
+
+These two OTU have contaminated the PCRCont samples. 
+
+# Hilights wich OTU are the more biaised
+
+## Number of samples overrating 100 % of contamination
+
+```{r hilight}
+# Change the Inf in NA
+res <- na_if(res, Inf)
+#Transpose the matrix so that we can easily play with the numbers
+  (t_res <- data.frame(t(res[-c(1:7)])))
+  list_colnames <- list()
+  for (i in c(1:dim(res)[1])) {
+    list_colnames[i] <- paste(res[i,1], res[i,2], res[i,3], res[i,4], res[i,5], res[i,6], res[i,7], sep ="_")
+  }
+  colnames(t_res) <- list_colnames
+# Show the number of times samples have a contamination percentage higher than 100 %
+(nb_hundred_samples <- 
+    cbind(data.frame(rownames(t_res)),
+          data.frame(count_row_if(function(x) x>=100, t_res))) %>% 
+    rename("Samples" = 1, "Count" = 2) %>% 
+    arrange(desc(Count))
+)
+  
+# Add the average contamination of the sample
+  
+  
+```
+
+
+## Average contamination for each sample
+
+
+```{r}
+# The same for the otu
+  
+(nb_hundred_otu <- 
+  cbind(data.frame(colnames(t_res)),
+        data.frame(count_col_if(function(x) x>=100, t_res))) %>% 
+  rename("OTU" = 1, "Count" = 2)%>%
+  arrange(desc(Count))
+)
+```
+
+
+
+
