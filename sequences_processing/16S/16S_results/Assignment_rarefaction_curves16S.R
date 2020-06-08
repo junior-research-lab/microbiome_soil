@@ -85,3 +85,5 @@ rarecurve(assignment_table_rare2, step = 20, sample = raremax, col = "blue", cex
 #Rarefy the dataframe
 set.seed(seed = 222029)
 rarefied_df <- rrarefy(assignment_table_rare2, raremax)
+export(assignment_table_rare2,"assignment_table_rare2.xlsx")
+getwd()
