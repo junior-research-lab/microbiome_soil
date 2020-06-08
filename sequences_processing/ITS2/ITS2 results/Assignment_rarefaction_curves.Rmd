@@ -77,10 +77,10 @@ sum(rowSums(all_taxa))
 
 ```{r rarefaction}
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
-
-(t_assignment_table <- data.frame(t(assignment_table[-1])))
+no_taxa <- assignment_table[-1]
+(t_assignment_table <- data.frame(t(no_taxa)))
 colnames(t_assignment_table) <- assignment_table[,1]
-rownames(t_assignment_table) <- assignment_table[1,]
+rownames(t_assignment_table) <- colnames(no_taxa[1,])
 View(t_assignment_table)
 
 # We also need to delete PCRCont and ExtCont from the dataframe
@@ -116,7 +116,7 @@ assignment_table_rare2 <- assignment_table_rare1[
 
   OTU <- specnumber(assignment_table_rare2) # It counts the number of OTU
   raremax <- min(rowSums(assignment_table_rare2)) #Look at the minimum number of reads in the   samples
-  print(raremax)
+
 
   Srare <- rarefy(assignment_table_rare2, raremax) #Function rarefy gives the expected species richness in random subsamples of size 'raremax' from the community
   
