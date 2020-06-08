@@ -30,8 +30,6 @@ library(expss)
 Only two OTU contaminated the samples at the PCR step (We have no contaminants in External contaminant sample)
 
 
-
-
 ```{r}
 #First, we select the columns we want to work with : all the samples (grep function) and PCRCont (which function)
 assignment_table_comp <- assignment_table[,c(which(colnames(assignment_table)=="PCRCont"),
