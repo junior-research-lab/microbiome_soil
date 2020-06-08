@@ -102,7 +102,7 @@ rarecurve(assignment_table_rare1, step = 20, sample = raremax, col = "blue", cex
 
 ```
 
-As we can see on the graph and int the printed rowSums, B-9-3, B-7-3 and B-5-1 should be deleted, so that we can have a correct rarefied table
+As we can see on the graph and int the printed rowSums, B-9-3, B-7-3, B-5-1 and B-3-1 should be deleted, so that we can have a correct rarefied table
 
 ```{r rarefied_df}
 
@@ -110,6 +110,7 @@ As we can see on the graph and int the printed rowSums, B-9-3, B-7-3 and B-5-1 s
 assignment_table_rare2 <- assignment_table_rare1[
                                           -c(grep("B-9-3", rownames(t_assignment_table), fixed = TRUE), 
                                              grep("B-7-3", rownames(t_assignment_table), fixed = TRUE), 
+                                             grep("B-3-1", rownames(t_assignment_table), fixed = TRUE),
                                              grep("B-5-1", rownames(t_assignment_table), fixed = TRUE)),]
 
 # Rarefaction curve
@@ -130,4 +131,4 @@ rarefied_df <- rrarefy(assignment_table_rare2, raremax)
 
 
 ```
-If we don't remove B-3-1, the number of read for each sample must be cutted to 3188. And that's not a lot. Maybe we should remove it also ??
+The rarefied number reaches 17129 after removing these 4 samples  
