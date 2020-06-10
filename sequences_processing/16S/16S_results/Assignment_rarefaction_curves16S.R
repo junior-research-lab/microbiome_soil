@@ -23,7 +23,7 @@ assignment_table <- merge(taxonomy_table, feature_table, by.x = "Feature ID", "#
 View(assignment_table)
 # Changing names
 assignment_table <- rename(assignment_table, "Feature_ID"="Feature ID")
-# Selecting only the taxon and samples columns + Removing B-2-3, EstCont and MockCom
+# Selecting only the taxon and samples columns + Removing EstCont and MockCom
 (assignment_table <- select(assignment_table, -Feature_ID, -Confidence, -ExtCont, -MockCom))
 taxa_assignment_table <- separate(data = assignment_table, col = Taxon, sep = "([pcofgs]__)", into = c("Domain","Phylum","Class","Order","Family","Gender","Species"))
 taxa_assignment_table$Phylum <-  gsub(";","",taxa_assignment_table$Phylum)
@@ -72,7 +72,7 @@ As we can see on the graph and int the printed rowSums, B-3-1 and B-5-2 should b
 #Delete  B-3-1 and B-5-2
 assignment_table_rare2 <- assignment_table_rare1[
   -c(grep("B-3-1", rownames(t_assignment_table), fixed = TRUE), 
-     grep("B-5-2", rownames(t_assignment_table), fixed = TRUE),]
+     grep("B-5-2", rownames(t_assignment_table), fixed = TRUE)),]
 # Rarefaction curve
 OTU <- specnumber(assignment_table_rare2) # It counts the number of OTU
 raremax <- min(rowSums(assignment_table_rare2)) #Look at the minimum number of reads in the   samples
@@ -86,8 +86,10 @@ rarecurve(assignment_table_rare2, step = 20, sample = raremax, col = "blue", cex
 set.seed(seed = 222029)
 rarefied_df <- rrarefy(assignment_table_rare2, raremax)
 
-    
- ```{r export}
+```
+The rarefied number reaches 33422 after removing these 4 samples  
+
+```{r export}
 # We must remove OTU with 1 read from the rarefied assignment table
 rarefied_df <- as.data.frame(rarefied_df)
 (rarefied_df = rarefied_df[,sapply(rarefied_df, function(x) {sum(x)>=2})])
