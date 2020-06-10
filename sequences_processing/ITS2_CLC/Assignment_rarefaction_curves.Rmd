@@ -1,0 +1,176 @@
+---
+title: "Assignment_rarefaction"
+author: "JRL"
+date: "05/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(vegan)
+library(tidyr)
+library(openxlsx)
+library(rio)
+```
+
+
+```{r import_tables, echo=FALSE, warning=TRUE}
+# Importing the assignment table file
+
+raw_assignment <- read.xlsx("Data analysis.xlsx")
+View(raw_assignment)
+raw_assignment <- as_tibble(raw_assignment)
+(raw_assignment <- raw_assignment %>% filter(!is.na(ID)))
+
+```
+
+
+
+```{r assignment_table, echo=FALSE}
+
+# Changing names
+
+
+colnames(raw_assignment) <- gsub("[[:alnum:]]\\d[[:punct:]]\\L\\d\\d\\d[[:punct:]]R\\d[[:punct:]]\\d\\d\\d[[:punct:]]\\d","", colnames(raw_assignment))
+colnames(raw_assignment) <- gsub("S","", colnames(raw_assignment))
+colnames(raw_assignment) <- gsub("_\\d","", colnames(raw_assignment))
+colnames(raw_assignment) <- gsub("_","", colnames(raw_assignment))
+colnames(raw_assignment) <- gsub("-", "_", colnames(raw_assignment))
+(raw_assignment <- rename(raw_assignment, "Combined_abundance" = "Combined.Abundance"))
+
+# Selecting only the taxonomy and samples columns
+
+raw_assignment <- select(raw_assignment, -Name, -ID, -Combined_abundance, -Min, -Max, -Mean, -Median, -td, -equence)
+
+# Replace the N/A value with unidentified
+
+raw_assignment$Taxonomy <- gsub("N/A","k__unidentified,p__unidentified,c__unidentified,o__unidentified,f__unidentified,g__unidentified,s__unidentified", raw_assignment$Taxonomy)
+
+#Split the taxonomic columns given the taxonomic order
+assignment_table <- separate(data = raw_assignment, col = Taxonomy, sep = "([pcofgs]__)", into = c("Kingdom","Phylum","Class","Order","Family","Gender","Species"))
+assignment_table$Phylum <-  gsub(",","",assignment_table$Phylum)
+assignment_table$Class <-  gsub(",","",assignment_table$Class)
+assignment_table$Order <-  gsub(",","",assignment_table$Order)
+assignment_table$Family <-  gsub(",","",assignment_table$Family)
+assignment_table$Gender <-  gsub(",","",assignment_table$Gender)
+assignment_table$Kingdom <-  gsub(",","",assignment_table$Kingdom)
+assignment_table$Kingdom <-  gsub("k__","",assignment_table$Kingdom)
+View(assignment_table)
+
+```
+
+```{r}
+# Replace NA with unidentified
+
+assignment_table <- assignment_table %>%
+  mutate(Kingdom = coalesce(Kingdom, "unidentified"),Phylum = coalesce(Phylum, "unidentified"),
+         Class = coalesce(Class, "unidentified"),
+         Order = coalesce(Order, "unidentified"), 
+         Family = coalesce(Family, "unidentified"),
+         Gender = coalesce(Gender, "unidentified"),
+         Species = coalesce(Family, "unidentified")
+         )
+
+# Total number of reads for unidentified taxa
+
+(unidentified_taxa <- assignment_table %>% 
+  filter(Phylum == "unidentified"))
+
+unidentified_taxa <- select( unidentified_taxa, -c(1:7))
+
+sum(rowSums(unidentified_taxa))
+  
+
+# Total number of reads
+
+all_taxa <- select(assignment_table, -c(1:7))
+
+sum(rowSums(all_taxa))
+  
+```
+
+
+```{r rarefaction}
+# To do the rarefaction curve it's needed to switch the columns and lines from the table
+
+no_taxa <- raw_assignment[-1]
+(t_assignment_table <- data.frame(t(no_taxa)))
+raw_assignment <- data.frame(raw_assignment)
+colnames(t_assignment_table) <- raw_assignment$Taxonomy
+
+# Rarefaction curve
+
+  OTU <- specnumber(t_assignment_table) # It counts the number of OTU
+  raremax <- min(rowSums(t_assignment_table)) #Look at the minimum number of reads in the   samples
+  print(rowSums(t_assignment_table))
+
+  Srare <- rarefy(t_assignment_table, raremax) #Function rarefy gives the expected species richness in random subsamples of size 'raremax' from the community
+  
+  # Plot the rarefaction curve
+plot(OTU, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+rarecurve(t_assignment_table, step = 20, sample = raremax, col = "blue", cex = 0.6, ylab = "OTU number")
+
+```
+
+As we can see on the graph and int the printed rowSums, B_9_3, B_7_3, B_5_1 and B_2_3 should be deleted, so that we can have a correct rarefied table
+
+```{r rarefied_df}
+
+#Delete  B_9_3, B_7_3, B_5_1 and B_2_3
+assignment_table_rare <- t_assignment_table[
+                                          -c(grep("B_9_3", rownames(t_assignment_table), fixed = TRUE), 
+                                             grep("B_7_3", rownames(t_assignment_table), fixed = TRUE), 
+                                             grep("B_2_3", rownames(t_assignment_table), fixed = TRUE),
+                                             grep("B_5_1", rownames(t_assignment_table), fixed = TRUE)),]
+
+# Rarefaction curve
+
+  OTU <- specnumber(assignment_table_rare) # It counts the number of OTU
+  raremax <- min(rowSums(assignment_table_rare)) #Look at the minimum number of reads in the   samples
+
+
+  Srare <- rarefy(assignment_table_rare, raremax) #Function rarefy gives the expected species richness in random subsamples of size 'raremax' from the community
+  
+  # Plot the rarefaction curve
+plot(OTU, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
+rarecurve(assignment_table_rare, step = 20, sample = raremax, col = "blue", cex = 0.6, ylab = "OTU number")
+
+  #Rarefy the dataframe
+set.seed(seed = 222029)
+rarefied_df <- rrarefy(assignment_table_rare, raremax)
+
+
+```
+The rarefied number reaches 33422 after removing these 4 samples  
+
+```{r export}
+
+# We must remove OTU with 1 read from the rarefied assignment table
+rarefied_df <- as.data.frame(rarefied_df)
+(rarefied_df = rarefied_df[,sapply(rarefied_df, function(x) {sum(x)>=2})])
+
+#Transpose the rarefied table
+(t_rarefied_df <- data.frame(t(rarefied_df)))
+no_taxa <- raw_assignment[-1]
+(t_assignment_table <- data.frame(t(no_taxa)))
+raw_assignment <- data.frame(raw_assignment)
+colnames(t_assignment_table) <- raw_assignment$Taxonomy
+
+#Split the Taxonomy column as seen before (Phylum, Gender, Species...)
+t_rarefied_df <- separate(data = t_rarefied_df, col = 1, sep = "([pcofgs]__)", into = c("Kingdom","Phylum","Class","Order","Family","Gender","Species"))
+t_rarefied_df$Phylum <-  gsub(",","",t_rarefied_df$Phylum)
+t_rarefied_df$Class <-  gsub(",","",t_rarefied_df$Class)
+t_rarefied_df$Order <-  gsub(",","",t_rarefied_df$Order)
+t_rarefied_df$Family <-  gsub(",","",t_rarefied_df$Family)
+t_rarefied_df$Gender <-  gsub(",","",t_rarefied_df$Gender)
+t_rarefied_df$Kingdom <-  gsub(",","",t_rarefied_df$Kingdom)
+t_rarefied_df$Kingdom <-  gsub("k__","",t_rarefied_df$Kingdom )
+
+#export the rarefied dataset as an xlsx file
+write.csv(t_rarefied_df,"ITS2_rarefied_table.csv", row.names = TRUE)
+write.xlsx(t_rarefied_df, "ITS2_rarefied_table.xlsx", asTable = TRUE) 
+
+```
+
