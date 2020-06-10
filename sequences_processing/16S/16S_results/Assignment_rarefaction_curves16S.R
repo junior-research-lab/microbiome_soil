@@ -85,5 +85,29 @@ rarecurve(assignment_table_rare2, step = 20, sample = raremax, col = "blue", cex
 #Rarefy the dataframe
 set.seed(seed = 222029)
 rarefied_df <- rrarefy(assignment_table_rare2, raremax)
-export(assignment_table_rare2,"assignment_table_rare2.xlsx")
+
+    
+ ```{r export}
+# We must remove OTU with 1 read from the rarefied assignment table
+rarefied_df <- as.data.frame(rarefied_df)
+(rarefied_df = rarefied_df[,sapply(rarefied_df, function(x) {sum(x)>=2})])
+#Transpose the rarefied table
+(t_rarefied_df <- data.frame(t(rarefied_df)))
+#Add a column 'taxonomy' instead of the rownames
+t_rarefied_df <- mutate(t_rarefied_df, Taxonomy = rownames(t_rarefied_df))
+#Split the Taxonomy column as seen before (Phylum, Gender, Species...)
+t_rarefied_df <- separate(data = t_rarefied_df, col = Taxonomy, sep = "([pcofgs]__)", into = c("Domain","Phylum","Class","Order","Family","Gender","Species"))
+t_rarefied_df$Phylum <-  gsub(",","",t_rarefied_df$Phylum)
+t_rarefied_df$Class <-  gsub(",","",t_rarefied_df$Class)
+t_rarefied_df$Order <-  gsub(",","",t_rarefied_df$Order)
+t_rarefied_df$Family <-  gsub(",","",t_rarefied_df$Family)
+t_rarefied_df$Gender <-  gsub(",","",t_rarefied_df$Gender)
+t_rarefied_df$Domain <-  gsub(",","",t_rarefied_df$Domain)
+t_rarefied_df$Domain <-  gsub("d__","",t_rarefied_df$Domain )
+t_rarefied_df$Species <-  gsub("([[:punct:]]\\d)","",t_rarefied_df$Species)
+#Put the taxonomic classes columns first
+t_rarefied_df <- select(t_rarefied_df, Domain, Phylum, Class, Order, Family, Gender, Species, everything())
+#export the rarefied dataset as an xlsx file
+write.xlsx(t_rarefied_df, "16S_rarefied_table.xlsx") 
 getwd()
+```
