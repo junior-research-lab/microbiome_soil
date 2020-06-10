@@ -1,0 +1,51 @@
+---
+title: "ITS2_grouping_phylum_gender"
+author: "JRL"
+date: "10/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(openxlsx)
+```
+
+
+```{r phylum}
+
+(df <- as.data.frame(read.xlsx("ITS2_rarefied_table.xlsx")))
+# Tidy the names from the imported table (no spaces, no number in Phylum and Gender columns)
+df$Phylum <- gsub(" ","", df$Phylum)
+df$Gender <- gsub(" ","", df$Gender)
+df$Gender <- gsub("\\d","", df$Gender)
+df$Gender <- gsub("([[:punct:]]\\d)","", df$Gender)
+
+## DATA SET TO USE
+df_phylum <- na.omit(df[,-c(1,3:7)])
+ad0 <- as.vector(NULL)
+for (s in 2:ncol(df_phylum)) {
+   ad <- tapply(df_phylum[,s], as.factor(df_phylum$Phylum), sum)*100 / sum(df_phylum[,s])
+   ad0 <- cbind(ad0,ad)
+}
+colnames(ad0)<-names(df)[2:ncol(df_phylum)]
+## Verification
+colSums(ad0)
+```
+
+
+```{r gender }
+
+df_gender <- na.omit(df[,-c(1:5,7)])
+ad1 <-as.vector(NULL)
+for (s in 2:ncol(df_gender)) {
+   ad <- tapply(df_gender[,s], as.factor(df_gender$Gender), sum)*100 / sum(df_gender[,s])
+   ad1 <-cbind(ad1,ad)
+}
+colnames(ad1)<-names(df_gender)[2:ncol(df_gender)]
+## Verification
+colSums(ad1)
+
+```
+
+
