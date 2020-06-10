@@ -13,9 +13,8 @@ library(openxlsx)
 library(rio)
 
 # Importing the tables to merge and skip the first line for feature
-taxonomy_table <- read_tsv("~/Documentos/SupAgro - Facul/JRL/microbiome_soil-master/microbiome_soil-master/sequences_processing/16S/16S_export_output_jrl2020/16S_taxonomy_jrl2020.tsv")
-View(taxonomy_table)
-feature_table <- read_tsv("~/Documentos/SupAgro - Facul/JRL/microbiome_soil-master/microbiome_soil-master/sequences_processing/16S/16S_export_output_jrl2020/16S_feature-table_jrl2020.tsv", skip = 1)
+taxonomy_table <- read_tsv("16S_taxonomy_jrl2020.tsv")
+feature_table <- read_tsv("16S_feature-table_jrl2020.tsv", skip = 1)
 View(feature_table)
 
 # Merging the tables
@@ -35,17 +34,7 @@ taxa_assignment_table$Domain <-  gsub(";","",taxa_assignment_table$Domain)
 taxa_assignment_table$Domain <-  gsub("d__","",taxa_assignment_table$Domain)
 View(taxa_assignment_table)
 
-# Total number of reads for unidentified taxa
-(unidentified_taxa <- taxa_assignment_table %>% 
-    filter(Phylum == "unidentified"))
-unidentified_taxa <- select( unidentified_taxa, -c(1:7))
-sum(rowSums(unidentified_taxa))
-#
-all_taxa <- select( taxa_assignment_table, -c(1:7))
-sum(rowSums(all_taxa))
 
-
-```{r rarefaction}
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
 (t_assignment_table <- data.frame(t(assignment_table[-1])))
 colnames(t_assignment_table) <- assignment_table[,1]
@@ -54,7 +43,8 @@ View(t_assignment_table)
 
 # We also need to delete PCRCont and ExtCont from the dataframe
 assignment_table_rare1 <-  t_assignment_table[
-  grep("[\\-]", rownames(t_assignment_table)),]
+  grep("([\\-])", rownames(t_assignment_table)),]
+
 # Rarefaction curve
 OTU <- specnumber(assignment_table_rare1) # It counts the number of OTU
 raremax <- min(rowSums(assignment_table_rare1)) #Look at the minimum number of reads in the   samples
@@ -65,14 +55,10 @@ Srare <- rarefy(assignment_table_rare1, raremax) #Function rarefy gives the expe
 plot(OTU, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
 rarecurve(assignment_table_rare1, step = 20, sample = raremax, col = "blue", cex = 0.6, ylab = "OTU number")
 
-
-As we can see on the graph and int the printed rowSums, B-3-1 and B-5-2 should be deleted, so that we can have a correct rarefied table
-
-```{r rarefied_df}
 #Delete  B-3-1 and B-5-2
 assignment_table_rare2 <- assignment_table_rare1[
-  -c(grep("B-3-1", rownames(t_assignment_table), fixed = TRUE), 
-     grep("B-5-2", rownames(t_assignment_table), fixed = TRUE),]
+  -c(grep("B-3-1", rownames(t_assignment_table)), 
+     grep("B-5-2", rownames(t_assignment_table))),]
 # Rarefaction curve
 OTU <- specnumber(assignment_table_rare2) # It counts the number of OTU
 raremax <- min(rowSums(assignment_table_rare2)) #Look at the minimum number of reads in the   samples
@@ -86,11 +72,11 @@ rarecurve(assignment_table_rare2, step = 20, sample = raremax, col = "blue", cex
 set.seed(seed = 222029)
 rarefied_df <- rrarefy(assignment_table_rare2, raremax)
 
-    
- ```{r export}
+
 # We must remove OTU with 1 read from the rarefied assignment table
 rarefied_df <- as.data.frame(rarefied_df)
 (rarefied_df = rarefied_df[,sapply(rarefied_df, function(x) {sum(x)>=2})])
+
 #Transpose the rarefied table
 (t_rarefied_df <- data.frame(t(rarefied_df)))
 #Add a column 'taxonomy' instead of the rownames
