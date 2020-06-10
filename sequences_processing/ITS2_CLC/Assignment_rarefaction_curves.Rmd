@@ -153,13 +153,12 @@ rarefied_df <- as.data.frame(rarefied_df)
 
 #Transpose the rarefied table
 (t_rarefied_df <- data.frame(t(rarefied_df)))
-no_taxa <- raw_assignment[-1]
-(t_assignment_table <- data.frame(t(no_taxa)))
-raw_assignment <- data.frame(raw_assignment)
-colnames(t_assignment_table) <- raw_assignment$Taxonomy
+
+#Add a column 'taxonomy' instead of the rownames
+t_rarefied_df <- mutate(t_rarefied_df, Taxonomy = rownames(t_rarefied_df))
 
 #Split the Taxonomy column as seen before (Phylum, Gender, Species...)
-t_rarefied_df <- separate(data = t_rarefied_df, col = 1, sep = "([pcofgs]__)", into = c("Kingdom","Phylum","Class","Order","Family","Gender","Species"))
+t_rarefied_df <- separate(data = t_rarefied_df, col = Taxonomy, sep = "([pcofgs]__)", into = c("Kingdom","Phylum","Class","Order","Family","Gender","Species"))
 t_rarefied_df$Phylum <-  gsub(",","",t_rarefied_df$Phylum)
 t_rarefied_df$Class <-  gsub(",","",t_rarefied_df$Class)
 t_rarefied_df$Order <-  gsub(",","",t_rarefied_df$Order)
@@ -168,9 +167,13 @@ t_rarefied_df$Gender <-  gsub(",","",t_rarefied_df$Gender)
 t_rarefied_df$Kingdom <-  gsub(",","",t_rarefied_df$Kingdom)
 t_rarefied_df$Kingdom <-  gsub("k__","",t_rarefied_df$Kingdom )
 
+t_rarefied_df$Species <-  gsub("([[:punct:]]\\d)","",t_rarefied_df$Species)
+
+#Put the taxonomic classes columns first
+t_rarefied_df <- select(t_rarefied_df, Kingdom, Phylum, Class, Order, Family, Gender, Species, everything())
+
 #export the rarefied dataset as an xlsx file
-write.csv(t_rarefied_df,"ITS2_rarefied_table.csv", row.names = TRUE)
-write.xlsx(t_rarefied_df, "ITS2_rarefied_table.xlsx", asTable = TRUE) 
+write.xlsx(t_rarefied_df, "ITS2_rarefied_table.xlsx") 
 
 ```
 
