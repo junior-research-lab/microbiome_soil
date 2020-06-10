@@ -45,7 +45,6 @@ all_taxa <- select( taxa_assignment_table, -c(1:7))
 sum(rowSums(all_taxa))
 
 
-```{r rarefaction}
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
 (t_assignment_table <- data.frame(t(assignment_table[-1])))
 colnames(t_assignment_table) <- assignment_table[,1]
@@ -54,7 +53,7 @@ View(t_assignment_table)
 
 # We also need to delete PCRCont and ExtCont from the dataframe
 assignment_table_rare1 <-  t_assignment_table[
-  grep("[\\-]", rownames(t_assignment_table)),]
+  grep(("[\\-]"), rownames(t_assignment_table)),]
 # Rarefaction curve
 OTU <- specnumber(assignment_table_rare1) # It counts the number of OTU
 raremax <- min(rowSums(assignment_table_rare1)) #Look at the minimum number of reads in the   samples
@@ -66,12 +65,10 @@ plot(OTU, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Speci
 rarecurve(assignment_table_rare1, step = 20, sample = raremax, col = "blue", cex = 0.6, ylab = "OTU number")
 
 
-As we can see on the graph and int the printed rowSums, B-3-1 and B-5-2 should be deleted, so that we can have a correct rarefied table
 
-```{r rarefied_df}
 #Delete  B-3-1 and B-5-2
 assignment_table_rare2 <- assignment_table_rare1[
-  -c(grep("B-3-1", rownames(t_assignment_table), fixed = TRUE), 
+  -c(grep("B-3-1", rownames(t_assignment_table),), 
      grep("B-5-2", rownames(t_assignment_table), fixed = TRUE)),]
 # Rarefaction curve
 OTU <- specnumber(assignment_table_rare2) # It counts the number of OTU
@@ -89,7 +86,7 @@ rarefied_df <- rrarefy(assignment_table_rare2, raremax)
 ```
 The rarefied number reaches 33422 after removing these 4 samples  
 
-```{r export}
+
 # We must remove OTU with 1 read from the rarefied assignment table
 rarefied_df <- as.data.frame(rarefied_df)
 (rarefied_df = rarefied_df[,sapply(rarefied_df, function(x) {sum(x)>=2})])
@@ -112,4 +109,3 @@ t_rarefied_df <- select(t_rarefied_df, Domain, Phylum, Class, Order, Family, Gen
 #export the rarefied dataset as an xlsx file
 write.xlsx(t_rarefied_df, "16S_rarefied_table.xlsx") 
 getwd()
-```
