@@ -15,6 +15,7 @@ library(rio)
 library(tidyverse)
 library(purrr) 
 library(tidyr)
+library(vegan)
 ```
 
 
@@ -88,5 +89,29 @@ colSums(ad0g)
 #export excel
 export(otu_pct_gender, "16s_pct.Otu.gender.xlsx")
 getwd()
+```
+```{r}
+## BIODIVERSITY INDICATORS
+
+# Shannon
+
+data(assign_table_2)
+shann <- diversity(assign_table_2, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann, file = "shann.csv", row.names = TRUE)
+
+
+# Simpson
+
+simp <- diversity(assign_table_2, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp, file = "simp.csv", row.names = TRUE)
+View(simp)
+
+# Chao1
+
+chao <- estimateR(assign_table_2)
+write.csv(chao, file = "chao.csv", row.names = TRUE)
+
+```
+
 
 ```
