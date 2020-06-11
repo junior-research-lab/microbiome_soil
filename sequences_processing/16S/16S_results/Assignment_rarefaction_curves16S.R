@@ -22,7 +22,6 @@ assignment_table <- merge(taxonomy_table, feature_table, by.x = "Feature ID", "#
 View(assignment_table)
 # Changing names
 assignment_table <- rename(assignment_table, "Feature_ID"="Feature ID")
-# Selecting only the taxon and samples columns + Removing B-2-3, EstCont and MockCom
 # Selecting only the taxon and samples columns + Removing EstCont and MockCom
 (assignment_table <- select(assignment_table, -Feature_ID, -Confidence, -ExtCont, -MockCom))
 taxa_assignment_table <- separate(data = assignment_table, col = Taxon, sep = "([pcofgs]__)", into = c("Domain","Phylum","Class","Order","Family","Gender","Species"))
@@ -62,6 +61,8 @@ assignment_table_rare2 <- assignment_table_rare1[
   -c(grep("B-3-1", rownames(t_assignment_table)), 
      grep("B-5-2", rownames(t_assignment_table))),]
 =======
+  -c(grep("B-3-1", rownames(t_assignment_table), fixed = TRUE), 
+     grep("B-5-2", rownames(t_assignment_table), fixed = TRUE)),]
 >>>>>>> 159b30576c4d57fa4920456e2af9f80169976f89
 # Rarefaction curve
 OTU <- specnumber(assignment_table_rare2) # It counts the number of OTU
