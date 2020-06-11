@@ -1,0 +1,71 @@
+---
+title: "Tables_group_by_taxa"
+author: "JRL"
+date: "11/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(openxlsx)
+library(tidyverse)
+```
+
+
+```{r tidy_data}
+
+(df <- as.data.frame(read.xlsx("ITS2_rarefied_table.xlsx")))
+
+# Tidy the names from the imported table (no spaces, no number in Phylum and Gender columns)
+df$Phylum <- gsub(" ","", df$Phylum)
+df$Gender <- gsub(" ","", df$Gender)
+df$Gender <- gsub("\\d","", df$Gender)
+df$Gender <- gsub("([[:punct:]]\\d)","", df$Gender)
+```
+
+
+```{r phylum}
+
+df_phylum <- na.omit(df[,-c(1,3:7)])
+
+#Calculate the number of reads per sample for each phylum
+df_phylum_sorted <- pivot_longer(df_phylum, cols= B_2_1:R_9_3, names_to = "Samples", values_to = "Nb_reads") 
+df_phylum_sorted <- group_by(df_phylum_sorted, Samples, Phylum) %>% 
+  summarise(Nb_reads = sum(Nb_reads))
+
+#Transpose the table
+
+(t_df_phylum <- data.frame(t(df_phylum_sorted[-1])))
+df_phylum_sorted <- data.frame(df_phylum_sorted)
+colnames(t_df_phylum) <- df_phylum_sorted$Phylum
+
+ad0 <- as.vector(NULL)
+for (s in 2:ncol(df_phylum)) {
+    sum_phylum_reads <- tapply(df_phylum[,s], as.factor(df_phylum$Phylum), sum)
+   ad <- tapply(df_phylum[,s], as.factor(df_phylum$Phylum), sum)*100 / sum(df_phylum[,s])
+   ad0 <- cbind(ad0,ad)
+}
+colnames(ad0)<-names(df_phylum)[2:ncol(df_phylum)]
+
+## Verification
+colSums(ad0)
+
+#Selecting the samples colums only
+ad0_w_unident <- as_tibble(ad0, rownames = NA)
+ad0_w_unident <- select(ad0_w_unident,starts_with("B"), starts_with("R"))
+
+#export the dataset
+write.xlsx(ad0_w_unident,"ITS2_phylum_reads.xlsx")
+```
+
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
