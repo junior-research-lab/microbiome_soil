@@ -65,7 +65,6 @@ unidentified_taxa <- select( unidentified_taxa, -c(1:7))
 
 sum(rowSums(unidentified_taxa))
   
-
 #
 
 all_taxa <- select( taxa_assignment_table, -c(1:7))
