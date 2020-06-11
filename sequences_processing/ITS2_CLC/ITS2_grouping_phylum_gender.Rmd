@@ -38,7 +38,7 @@ colSums(ad0)
 
 #Selecting the samples colums only
 ad0_w_unident <- as_tibble(ad0, rownames = NA)
-ad0_w_unident <- select(ad0,starts_with("B"), starts_with("R"))
+ad0_w_unident <- select(ad0_w_unident,starts_with("B"), starts_with("R"))
 ```
 
 ```{r phylum_without_unidentified}
@@ -148,7 +148,7 @@ ad1_w_unident <- pivot_longer(ad1_w_unident, cols= B_2_1:R_9_3, names_to = "Samp
  
 # Stacked + percent
 (ggplot(data = ad1_w_unident, mapping = aes(x = Samples, y = Pct_gender, fill=Gender )) + 
-   geom_bar(position="fill", stat="identity", show.legend = FALSE) +
+   geom_bar(position="fill", stat="identity") +
    geom_vline(aes(intercept = Samples, xintercept = "R_2_1")) +
    theme(axis.text.x = element_text(angle=90))
 )
