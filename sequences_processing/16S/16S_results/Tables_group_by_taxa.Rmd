@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(purrr)
 library(openxlsx)
 library(tidyverse)
+library(vegan)
 ```
 
 
@@ -83,5 +84,98 @@ df_gender_sorted <- group_by(df_gender_sorted, Samples, Gender) %>%
 
 #export the dataset
 write.xlsx(df_gender_sorted,"16S_gender_reads.xlsx")
+```
+
+```{r}
+## BIODIVERSITY INDICATORS
+
+
+# Phylum of 16S 
+
+#Transpose the table
+
+t_df_phylum_sorted <- data.frame(t(df_phylum_sorted[-1]))
+
+# Shannon for Phylum of 16S
+
+shann_phylum_16S <- diversity(t_df_phylum_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_phylum_16S, file = "shann_phylum_16S.csv", row.names = TRUE)
+
+# Simpson for Phylum of 16S
+
+simp_phylum_16S <- diversity(t_df_phylum_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_phylum_16S, file = "simp_phylum_16S.csv", row.names = TRUE)
+
+# Chao1 for Phylum of 16S
+
+chao_phylum_16S <- estimateR(t_df_phylum_sorted)
+write.csv(chao_phylum_16S, file = "chao_phylum_16S.csv", row.names = TRUE)
+
+
+# Order of 16S
+
+#Transpose the table
+
+t_df_order_sorted <- data.frame(t(df_order_sorted[-1]))
+
+# Shannon for Order of 16S
+
+shann_order_16S <- diversity(t_df_order_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_order_16S, file = "shann_order_16S.csv", row.names = TRUE)
+
+# Simpson for Order of 16S
+
+simp_order_16S <- diversity(t_df_order_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_order_16S, file = "simp_order_16S.csv", row.names = TRUE)
+
+# Chao1 for Order of 16S
+
+chao_order_16S <- estimateR(t_df_order_sorted)
+write.csv(chao_order_16S, file = "chao_order_16S.csv", row.names = TRUE)
+
+
+# Family of 16S
+
+#Transpose the table
+
+t_df_family_sorted <- data.frame(t(df_family_sorted[-1]))
+
+# Shannon for Family of 16S
+
+shann_family_16S <- diversity(t_df_family_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_family_16S, file = "shann_family_16S.csv", row.names = TRUE)
+
+# Simpson for Family of 16S
+
+simp_family_16S <- diversity(t_df_family_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_family_16S, file = "simp_family_16S.csv", row.names = TRUE)
+
+# Chao1 for Family of 16S
+
+chao_family_16S <- estimateR(t_df_family_sorted)
+write.csv(chao_family_16S, file = "chao_family_16S.csv", row.names = TRUE)
+
+
+# Gender of 16S
+
+#Transpose the table
+
+t_df_gender_sorted <- data.frame(t(df_gender_sorted[-1]))
+
+# Shannon for Gender of 16S
+
+shann_gender_16S <- diversity(t_df_gender_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_gender_16S, file = "shann_gender_16S.csv", row.names = TRUE)
+
+# Simpson for Gender of 16S
+
+simp_gender_16S <- diversity(t_df_gender_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_gender_16S, file = "simp_gender_16S.csv", row.names = TRUE)
+
+# Chao1 for Gender of 16S
+
+chao_gender_16S <- estimateR(t_df_gender_sorted)
+write.csv(chao_gender_16S, file = "chao_gender_16S.csv", row.names = TRUE)
+
 ```
 
