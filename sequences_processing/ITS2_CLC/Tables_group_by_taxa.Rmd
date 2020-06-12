@@ -13,15 +13,9 @@ library(tidyverse)
 ```
 
 
-```{r tidy_data}
+```{r import}
 
 (df <- as.data.frame(read.xlsx("ITS2_rarefied_table.xlsx")))
-
-# Tidy the names from the imported table (no spaces, no number in Phylum and Gender columns)
-df$Phylum <- gsub(" ","", df$Phylum)
-df$Gender <- gsub(" ","", df$Gender)
-df$Gender <- gsub("\\d","", df$Gender)
-df$Gender <- gsub("([[:punct:]]\\d)","", df$Gender)
 ```
 
 
