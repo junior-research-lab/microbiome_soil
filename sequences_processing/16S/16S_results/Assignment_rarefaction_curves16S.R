@@ -130,6 +130,9 @@ names(df_no_na) <- names(t_rarefied_df)
 # Replace . by _ in the name of the samples
 colnames(df_no_na) <- gsub("\\.","_", colnames(df_no_na))
 
+#We remove the lines with the mitochondria order because it's not bacteria
+df_no_na <- filter(df_no_na, Family != "Mitochondria")
+
 #export the rarefied dataset as an xlsx file
 write.xlsx(df_no_na, "16S_rarefied_table.xlsx") 
 getwd()
