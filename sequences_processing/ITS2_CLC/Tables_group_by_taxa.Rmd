@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(purrr)
 library(openxlsx)
 library(tidyverse)
+library(vegan)
 ```
 
 
@@ -88,5 +89,99 @@ df_gender_sorted <- group_by(df_gender_sorted, Samples, Gender) %>%
 
 #export the dataset
 write.xlsx(df_gender_sorted,"ITS2_gender_reads.xlsx")
+```
+```{r}
+## BIODIVERSITY INDICATORS
+
+
+# Phylum of ITS2 
+
+#Transpose the table
+
+t_df_phylum_sorted <- data.frame(t(df_phylum_sorted[-1]))
+
+# Shannon for Phylum of ITS2
+
+t_df_phylum_sorted <- data.frame(t(df_phylum_sorted[-1]))
+shann_phylum_ITS2 <- diversity(t_df_phylum_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_phylum_ITS2, file = "shann_phylum_ITS2.csv", row.names = TRUE)
+
+# Simpson for Phylum of ITS2
+
+simp_phylum_ITS2 <- diversity(t_df_phylum_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_phylum_ITS2, file = "simp_phylum_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Phylum of ITS2
+
+chao_phylum_ITS2 <- estimateR(t_df_phylum_sorted)
+write.csv(chao_phylum_ITS2, file = "chao.csv", row.names = TRUE)
+
+
+# Order of ITS2
+
+#Transpose the table
+
+t_df_order_sorted <- data.frame(t(df_order_sorted[-1]))
+
+# Shannon for Order of ITS2
+
+shann_order_ITS2 <- diversity(t_df_order_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_order_ITS2, file = "shann_order_ITS2.csv", row.names = TRUE)
+
+# Simpson for Order of ITS2
+
+simp_order_ITS2 <- diversity(t_df_order_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_order_ITS2, file = "simp_order_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Order of ITS2
+
+chao_order_ITS2 <- estimateR(t_df_order_sorted)
+write.csv(chao_order_ITS2, file = "chao_order_ITS2.csv", row.names = TRUE)
+
+
+# Family of ITS2
+
+#Transpose the table
+
+t_df_family_sorted <- data.frame(t(df_family_sorted[-1]))
+
+# Shannon for Family of ITS2
+
+shann_family_ITS2 <- diversity(t_df_family_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_family_ITS2, file = "shann_family_ITS2.csv", row.names = TRUE)
+
+# Simpson for Family of ITS2
+
+simp_family_ITS2 <- diversity(t_df_family_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_family_ITS2, file = "simp_family_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Family of ITS2
+
+chao_family_ITS2 <- estimateR(t_df_family_sorted)
+write.csv(chao_family_ITS2, file = "chao_family_ITS2.csv", row.names = TRUE)
+
+
+# Gender of ITS2
+
+#Transpose the table
+
+t_df_gender_sorted <- data.frame(t(df_gender_sorted[-1]))
+
+# Shannon for Gender of ITS2
+
+shann_gender_ITS2 <- diversity(t_df_gender_sorted, index = "shannon", MARGIN = 1, base = exp(1))
+write.csv(shann_gender_ITS2, file = "shann_gender_ITS2.csv", row.names = TRUE)
+
+# Simpson for Gender of ITS2
+
+simp_gender_ITS2 <- diversity(t_df_gender_sorted, index = "simpson", MARGIN = 1, base = exp(1))
+write.csv(simp_gender_ITS2, file = "simp_gender_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Gender of ITS2
+
+chao_gender_ITS2 <- estimateR(t_df_gender_sorted)
+write.csv(chao_gender_ITS2, file = "chao_gender_ITS2.csv", row.names = TRUE)
+
+
 ```
 
