@@ -172,6 +172,13 @@ t_rarefied_df$Species <-  gsub("([[:punct:]]\\d)","",t_rarefied_df$Species)
 #Put the taxonomic classes columns first
 t_rarefied_df <- select(t_rarefied_df, Kingdom, Phylum, Class, Order, Family, Gender, Species, everything())
 
+#Tidy the values of the taxonomic unit before exporting it
+# Tidy the names from the imported table (no spaces, no number in Phylum and Gender columns)
+t_rarefied_df$Phylum <- gsub(" ","", t_rarefied_df$Phylum)
+t_rarefied_df$Gender <- gsub(" ","", t_rarefied_df$Gender)
+t_rarefied_df$Gender <- gsub("\\d","", t_rarefied_df$Gender)
+t_rarefied_df$Gender <- gsub("([[:punct:]]\\d)","", t_rarefied_df$Gender)
+
 #export the rarefied dataset as an xlsx file
 write.xlsx(t_rarefied_df, "ITS2_rarefied_table.xlsx") 
 
