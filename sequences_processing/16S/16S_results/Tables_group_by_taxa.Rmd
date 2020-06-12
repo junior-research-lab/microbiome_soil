@@ -1,0 +1,87 @@
+---
+title: "Tables_group_by_taxa"
+author: "JRL"
+date: "11/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(openxlsx)
+library(tidyverse)
+```
+
+
+```{r tidy_data}
+
+(df <- as.data.frame(read.xlsx("16S_rarefied_table.xlsx")))
+
+```
+
+
+```{r phylum}
+
+#Select the phylum column
+df_phylum <- na.omit(df[,-c(1,3:7)])
+
+#Calculate the number of reads per sample for each phylum
+df_phylum_sorted <- pivot_longer(df_phylum, cols= B_2_1:R_9_3, names_to = "Samples", values_to = "Nb_reads") 
+df_phylum_sorted <- group_by(df_phylum_sorted, Samples, Phylum) %>% 
+  summarise(Nb_reads = sum(Nb_reads))
+
+#Wide the table so that one sample has one line
+df_phylum_sorted <- pivot_wider(df_phylum_sorted, names_from = Phylum, values_from = Nb_reads)
+
+#export the dataset
+write.xlsx(df_phylum_sorted,"16S_phylum_reads.xlsx")
+```
+
+
+```{r order}
+df_order <- na.omit(df[,-c(1:3,5:7)])
+
+#Calculate the number of reads per sample for each order
+df_order_sorted <- pivot_longer(df_order, cols= B_2_1:R_9_3, names_to = "Samples", values_to = "Nb_reads") 
+df_order_sorted <- group_by(df_order_sorted, Samples, Order) %>% 
+  summarise(Nb_reads = sum(Nb_reads))
+
+#Wide the table so that one sample has one line
+(df_order_sorted <- pivot_wider(df_order_sorted, names_from = Order, values_from = Nb_reads))
+
+#export the dataset
+write.xlsx(df_order_sorted,"16S_order_reads.xlsx")
+
+```
+
+```{r family}
+df_family <- na.omit(df[,-c(1:4,6:7)])
+
+#Calculate the number of reads per sample for each order
+df_family_sorted <- pivot_longer(df_family, cols= B_2_1:R_9_3, names_to = "Samples", values_to = "Nb_reads") 
+df_family_sorted <- group_by(df_family_sorted, Samples, Family) %>% 
+  summarise(Nb_reads = sum(Nb_reads))
+
+#Wide the table so that one sample has one line
+(df_family_sorted <- pivot_wider(df_family_sorted, names_from = Family, values_from = Nb_reads))
+
+#export the dataset
+write.xlsx(df_family_sorted,"16S_family_reads.xlsx")
+
+```
+
+```{r gender}
+df_gender <- na.omit(df[,-c(1:5,7)])
+
+#Calculate the number of reads per sample for each order
+df_gender_sorted <- pivot_longer(df_gender, cols= B_2_1:R_9_3, names_to = "Samples", values_to = "Nb_reads") 
+df_gender_sorted <- group_by(df_gender_sorted, Samples, Gender) %>% 
+  summarise(Nb_reads = sum(Nb_reads))
+
+#Wide the table so that one sample has one line
+(df_gender_sorted <- pivot_wider(df_gender_sorted, names_from = Gender, values_from = Nb_reads))
+
+#export the dataset
+write.xlsx(df_gender_sorted,"16S_gender_reads.xlsx")
+```
+
