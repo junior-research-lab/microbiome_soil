@@ -20,8 +20,10 @@ View(feature_table)
 # Merging the tables
 assignment_table <- merge(taxonomy_table, feature_table, by.x = "Feature ID", "#OTU ID")
 View(assignment_table)
+
 # Changing names
 assignment_table <- rename(assignment_table, "Feature_ID"="Feature ID")
+
 # Selecting only the taxon and samples columns + Removing EstCont and MockCom
 (assignment_table <- select(assignment_table, -Feature_ID, -Confidence, -ExtCont, -MockCom))
 taxa_assignment_table <- separate(data = assignment_table, col = Taxon, sep = "([pcofgs]__)", into = c("Domain","Phylum","Class","Order","Family","Gender","Species"))
@@ -33,6 +35,7 @@ taxa_assignment_table$Gender <-  gsub(";","",taxa_assignment_table$Gender)
 taxa_assignment_table$Domain <-  gsub(";","",taxa_assignment_table$Domain)
 taxa_assignment_table$Domain <-  gsub("d__","",taxa_assignment_table$Domain)
 View(taxa_assignment_table)
+
 
 
 # To do the rarefaction curve it's needed to switch the columns and lines from the table
@@ -92,7 +95,42 @@ t_rarefied_df$Domain <-  gsub("d__","",t_rarefied_df$Domain )
 t_rarefied_df$Species <-  gsub("([[:punct:]]\\d)","",t_rarefied_df$Species)
 #Put the taxonomic classes columns first
 t_rarefied_df <- select(t_rarefied_df, Domain, Phylum, Class, Order, Family, Gender, Species, everything())
+
+# Tidy the names from the imported table (no spaces, no number in taxonomic columns)
+t_rarefied_df$Domain <- gsub(";","", t_rarefied_df$Domain)
+
+t_rarefied_df$Phylum <- gsub(" ","", t_rarefied_df$Phylum)
+t_rarefied_df$Phylum <- gsub(";","", t_rarefied_df$Phylum)
+t_rarefied_df$Phylum <- gsub("([[:punct:]]\\d)","", t_rarefied_df$Phylum)
+
+t_rarefied_df$Class <- gsub(" ","", t_rarefied_df$Class)
+t_rarefied_df$Class <- gsub(";","", t_rarefied_df$Class)
+t_rarefied_df$Class <- gsub("([[:punct:]]\\d)","", t_rarefied_df$Class)
+
+t_rarefied_df$Family <- gsub(" ","", t_rarefied_df$Family)
+t_rarefied_df$Family <- gsub(";","", t_rarefied_df$Family)
+t_rarefied_df$Family <- gsub("([[:punct:]]\\d)","",t_rarefied_df$Family)
+
+t_rarefied_df$Order <- gsub(" ","", t_rarefied_df$Order)
+t_rarefied_df$Order <- gsub(";","", t_rarefied_df$Order)
+t_rarefied_df$Order <- gsub("([[:punct:]]\\d)","", t_rarefied_df$Order)
+
+t_rarefied_df$Gender <- gsub(" ","", t_rarefied_df$Gender)
+t_rarefied_df$Gender <- gsub(";","", t_rarefied_df$Gender)
+t_rarefied_df$Gender <- gsub("([[:punct:]]\\d)","", t_rarefied_df$Gender)
+
+#Change NA -> Unidentified
+x0<-as.vector(NULL)
+for (i in 1:7) {  x1 <- replace_na(t_rarefied_df[,i],"unidentified")  
+x0 <- cbind(x0,x1) 
+}
+df_no_na <- cbind(x0,t_rarefied_df[,8:length(df)])
+names(df_no_na) <- names(t_rarefied_df) 
+
+# Replace . by _ in the name of the samples
+colnames(df_no_na) <- gsub("\\.","_", colnames(df_no_na))
+
 #export the rarefied dataset as an xlsx file
-write.xlsx(t_rarefied_df, "16S_rarefied_table.xlsx") 
+write.xlsx(df_no_na, "16S_rarefied_table.xlsx") 
 getwd()
 ```
