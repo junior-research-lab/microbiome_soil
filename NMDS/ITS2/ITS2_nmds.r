@@ -3,6 +3,7 @@ library(vegan)
 library(openxlsx)
 library(ggplot2)
 library(dplyr)
+library(ggrepel)
 
 #Set the seed
 set.seed(222029)
@@ -43,8 +44,8 @@ p_scores$Phylum <- rownames(p_scores)
 ggplot() + 
   stat_ellipse(data = p_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
   geom_point(data = p_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
-  geom_text(data = p_scores,aes(x=NMDS1,y=NMDS2,label = Phylum),alpha=0.5) +  # add the species labels
-  geom_text(data = p_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0) +  # add the site labels
+  geom_text(data = p_scores,aes(x=NMDS1,y=NMDS2,label = Phylum),alpha=0.5, check_overlap = TRUE) +  # add the species labels
+  geom_text(data = p_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
   coord_equal() +
   theme_bw() + 
   theme(axis.text.x = element_blank(),  # remove x-axis text
@@ -79,11 +80,11 @@ df_order <- mutate(df_order, Type_soil = ifelse(grepl("B", df_order$Samples),"Bu
   select(-unidentified)
 
 #subset the dataframe on which to base the ordination (data_taxa)
-o_data_taxa <- df_order[,3:length(df_phylum)]
+o_data_taxa <- df_order[,3:length(df_order)]
 rownames(o_data_taxa) <- df_order$Samples
 
 #Identify the columns that contains the descriptive/environmental data (data_sample)
-o_data_sample <- df_phylum[,1:2]
+o_data_sample <- df_order[,1:2]
 
 #ordination by NMDS. WRITE DOWN the 20th stress indicator
 NMDS_order <- metaMDS(o_data_taxa, distance = "bray", k = 2)
@@ -102,8 +103,8 @@ o_scores$Order <- rownames(o_scores)
 ggplot() + 
   stat_ellipse(data = o_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
   geom_point(data = o_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
-  geom_text(data = o_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5) +  # add the species labels
-  geom_text(data = o_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0) +  # add the site labels
+  geom_text(data = o_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5, check_overlap = TRUE) +  # add the species labels
+  geom_text(data = o_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
   coord_equal() +
   theme_bw() + 
   theme(axis.text.x = element_blank(),  # remove x-axis text
@@ -161,8 +162,8 @@ f_scores$Order <- rownames(f_scores)
 ggplot() + 
   stat_ellipse(data = f_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
   geom_point(data = f_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
-  geom_text(data = f_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5) +  # add the species labels
-  geom_text(data = f_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0) +  # add the site labels
+  geom_text(data = f_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5, check_overlap = TRUE) +  # add the species labels
+  geom_text(data = f_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
   coord_equal() +
   theme_bw() + 
   theme(axis.text.x = element_blank(),  # remove x-axis text
@@ -220,8 +221,8 @@ g_scores$Order <- rownames(g_scores)
 ggplot() + 
   stat_ellipse(data = g_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
   geom_point(data = g_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
-  geom_text(data = g_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5) +  # add the species labels
-  geom_text(data = g_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0) +  # add the site labels
+  geom_text(data = g_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5, check_overlap = TRUE) +  # add the species labels
+  geom_text(data = g_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
   coord_equal() +
   theme_bw() + 
   theme(axis.text.x = element_blank(),  # remove x-axis text
