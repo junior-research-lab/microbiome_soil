@@ -2,6 +2,7 @@
 library(vegan)
 library(openxlsx)
 library(ggplot2)
+library(dplyr)
 
 #Set the seed
 set.seed(222029)
@@ -180,47 +181,47 @@ f_fit <- adonis(f_data_taxa ~ Type_soil , data = f_data_sample, permutations=999
 f_fit
 
 #Check assumption of homogeneity of multivariate dispersion
-distances_data <- vegdist(data_taxa)
-anova(betadisper(distances_data, data_sample$Type_soil))
+f_distances_data <- vegdist(f_data_taxa)
+anova(betadisper(f_distances_data, f_data_sample$Type_soil))
 
-###### NMDS FOR FAMILY #######
+###### NMDS FOR GENDER #######
 
 #Attach data
-df_family <- read.xlsx("ITS2_family_reads.xlsx")
-attach(df_family)
-str(df_family)
+df_gender <- read.xlsx("ITS2_gender_reads.xlsx")
+attach(df_gender)
+str(df_gender)
 
 #Add a column specifying if the sample is bulk or rhizospheric soil
-df_family <- mutate(df_family, Type_soil = ifelse(grepl("B", df_family$Samples),"Bulk","Rhizosphere" ) ) %>%
+df_gender <- mutate(df_gender, Type_soil = ifelse(grepl("B", df_gender$Samples),"Bulk","Rhizosphere" ) ) %>%
   select(Samples, Type_soil, everything()) %>% 
   select(-unidentified)
 
 #subset the dataframe on which to base the ordination (data_taxa)
-f_data_taxa <- df_family[,3:length(df_family)]
-rownames(f_data_taxa) <- df_family$Samples
+g_data_taxa <- df_gender[,3:length(df_gender)]
+rownames(g_data_taxa) <- df_gender$Samples
 
 #Identify the columns that contains the descriptive/environmental data (data_sample)
-f_data_sample <- df_family[,1:2]
+g_data_sample <- df_gender[,1:2]
 
 #ordination by NMDS. WRITE DOWN the 20th stress indicator
-NMDS_family <- metaMDS(f_data_taxa, distance = "bray", k = 2)
+NMDS_family <- metaMDS(g_data_taxa, distance = "bray", k = 2)
 
 ######Data visualisation
 
 #Create a table with the results of the NMDS for the samples
-f_sample_scores <- as.data.frame(scores(NMDS_family))
-f_sample_scores$site <- rownames(f_sample_scores)
-f_sample_scores$Habitat <- df_family$Type_soil
+g_sample_scores <- as.data.frame(scores(NMDS_family))
+g_sample_scores$site <- rownames(g_sample_scores)
+g_sample_scores$Habitat <- df_family$Type_soil
 
 #Create a table with the results of the NMDS for the phylum
-f_scores <- as.data.frame(scores(NMDS_family, "species"))
-f_scores$Order <- rownames(f_scores)
+g_scores <- as.data.frame(scores(NMDS_family, "species"))
+g_scores$Order <- rownames(g_scores)
 
 ggplot() + 
-  stat_ellipse(data = f_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
-  geom_point(data = f_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
-  geom_text(data = f_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5) +  # add the species labels
-  geom_text(data = f_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0) +  # add the site labels
+  stat_ellipse(data = g_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
+  geom_point(data = g_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
+  geom_text(data = g_scores,aes(x=NMDS1,y=NMDS2,label = Order),alpha=0.5) +  # add the species labels
+  geom_text(data = g_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0) +  # add the site labels
   coord_equal() +
   theme_bw() + 
   theme(axis.text.x = element_blank(),  # remove x-axis text
@@ -235,9 +236,9 @@ ggplot() +
 
 ########Statistical proof 
 #Bootstrapping and testing for differences between the groups
-o_fit <- adonis(o_data_taxa ~ Type_soil , data = o_data_sample, permutations=999, method="bray")
-o_fit
+g_fit <- adonis(g_data_taxa ~ Type_soil , data = g_data_sample, permutations=999, method="bray")
+g_fit
 
 #Check assumption of homogeneity of multivariate dispersion
-distances_data <- vegdist(data_taxa)
-anova(betadisper(distances_data, data_sample$Type_soil))
+g_distances_data <- vegdist(g_data_taxa)
+anova(betadisper(g_distances_data, g_data_sample$Type_soil))
