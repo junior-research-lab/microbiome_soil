@@ -3,7 +3,6 @@ library(vegan)
 library(openxlsx)
 library(ggplot2)
 library(dplyr)
-library(ggrepel)
 
 #Set the seed
 set.seed(222029)
@@ -60,8 +59,7 @@ ggplot() +
 
 ########Statistical proof 
 #Bootstrapping and testing for differences between the groups
-p_fit <- adonis(p_data_taxa ~ Type_soil, data=p_data_sample, permutations=999, method="bray")
-
+(p_fit <- adonis(p_data_taxa ~ Type_soil, data=p_data_sample, permutations=999, method="bray"))
 
 #Check assumption of homogeneity of multivariate dispersion
 p_distances_data <- vegdist(p_data_taxa)
