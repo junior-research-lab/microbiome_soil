@@ -7,6 +7,12 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(openxlsx)
+library(tidyverse)
+library(vegan)
+library(readr)
+library(readxl)
 ```
 
 ```{r import tables}
@@ -100,6 +106,7 @@ t_df_gender <- data.frame(t(df_gender[-1]))
 
 shann_gender_ITS2 <- diversity(t_df_gender, index = "shannon", MARGIN = 1, base = exp(1))
 write.csv(shann_gender_ITS2, file = "shann_gender_ITS2.csv", row.names = TRUE)
+View(shann_gender_ITS2)
 
 # Simpson for Gender of ITS2
 
@@ -110,5 +117,32 @@ write.csv(simp_gender_ITS2, file = "simp_gender_ITS2.csv", row.names = TRUE)
 
 chao_gender_ITS2 <- estimateR(t_df_gender)
 write.csv(chao_gender_ITS2, file = "chao_gender_ITS2.csv", row.names = TRUE)
+```
+
+```{r}
+# Phylum
+
+total_phylum <- rbind(shann_phylum_ITS2, simp_phylum_ITS2, chao_phylum_ITS2)
+t_total_phylum <- data.frame(t(total_phylum))
+View(t_total_phylum)
+
+# Order
+
+total_order <- rbind(shann_order_ITS2, simp_order_ITS2, chao_order_ITS2)
+t_total_order <- data.frame(t(total_order))
+View(t_total_order)
+
+# Family
+
+total_family <- rbind(shann_family_ITS2, simp_family_ITS2, chao_family_ITS2)
+t_total_family <- data.frame(t(total_family))
+View(t_total_family)
+
+# Gender
+
+total_gender <- rbind(shann_gender_ITS2, simp_gender_ITS2, chao_gender_ITS2)
+t_total_gender <- data.frame(t(total_gender))
+View(t_total_gender)
+
 ```
 
