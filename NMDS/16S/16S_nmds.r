@@ -40,11 +40,48 @@ p_sample_scores$Habitat <- df_phylum$Type_soil
 p_scores <- as.data.frame(scores(NMDS_phylum, "species"))
 p_scores$Phylum <- rownames(p_scores)
 
+# The first plot is NMDS1 x NMDS2
 ggplot() + 
   stat_ellipse(data = p_sample_scores, aes(x=NMDS1,y=NMDS2,colour = Habitat), size = 1) +
   geom_point(data = p_sample_scores,mapping = aes(x = NMDS1,y = NMDS2, shape = Habitat, colour = Habitat),size=4) + # add the point markers
   geom_text(data = p_scores,aes(x=NMDS1,y=NMDS2,label = Phylum),alpha=0.5, check_overlap = TRUE) +  # add the species labels
   geom_text(data = p_sample_scores,aes(x=NMDS1,y=NMDS2,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
+  coord_equal() +
+  theme_bw() + 
+  theme(axis.text.x = element_blank(),  # remove x-axis text
+        axis.text.y = element_blank(), # remove y-axis text
+        axis.ticks = element_blank(),  # remove axis ticks
+        axis.title.x = element_text(size=10), # remove x-axis labels
+        axis.title.y = element_text(size=10), # remove y-axis labels
+        panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank(),  #remove minor-grid labels
+        plot.background = element_blank())
+
+#The second one is NMDS1 x NMDS3
+ggplot() + 
+  stat_ellipse(data = p_sample_scores, aes(x=NMDS1,y=NMDS3,colour = Habitat), size = 1) +
+  geom_point(data = p_sample_scores,mapping = aes(x = NMDS1,y = NMDS3, shape = Habitat, colour = Habitat),size=4) + # add the point markers
+  geom_text(data = p_scores,aes(x=NMDS1,y=NMDS3,label = Phylum),alpha=0.5, check_overlap = TRUE) +  # add the species labels
+  geom_text(data = p_sample_scores,aes(x=NMDS1,y=NMDS3,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
+  coord_equal() +
+  theme_bw() + 
+  theme(axis.text.x = element_blank(),  # remove x-axis text
+        axis.text.y = element_blank(), # remove y-axis text
+        axis.ticks = element_blank(),  # remove axis ticks
+        axis.title.x = element_text(size=10), # remove x-axis labels
+        axis.title.y = element_text(size=10), # remove y-axis labels
+        panel.background = element_blank(), 
+        panel.grid.major = element_blank(),  #remove major-grid labels
+        panel.grid.minor = element_blank(),  #remove minor-grid labels
+        plot.background = element_blank())
+
+#And the last plot is NMDS 2 x NMDS3
+ggplot() + 
+  stat_ellipse(data = p_sample_scores, aes(x=NMDS2,y=NMDS3,colour = Habitat), size = 1) +
+  geom_point(data = p_sample_scores,mapping = aes(x = NMDS2,y = NMDS3, shape = Habitat, colour = Habitat),size=4) + # add the point markers
+  geom_text(data = p_scores,aes(x=NMDS2,y=NMDS3,label = Phylum),alpha=0.5, check_overlap = TRUE) +  # add the species labels
+  geom_text(data = p_sample_scores,aes(x=NMDS2,y=NMDS3,label = site),size = 3,vjust=0,hjust=0, check_overlap = TRUE) +  # add the site labels
   coord_equal() +
   theme_bw() + 
   theme(axis.text.x = element_blank(),  # remove x-axis text
@@ -116,8 +153,8 @@ ggplot() +
         panel.grid.minor = element_blank(),  #remove minor-grid labels
         plot.background = element_blank())
 
-#The second one is NMDS1 x NMDS3
 
+#The second one is NMDS1 x NMDS3
 ggplot() + 
   stat_ellipse(data = o_sample_scores, aes(x=NMDS1,y=NMDS3,colour = Habitat), size = 1) +
   geom_point(data = o_sample_scores,mapping = aes(x = NMDS1,y = NMDS3, shape = Habitat, colour = Habitat),size=4) + # add the point markers
@@ -136,7 +173,6 @@ ggplot() +
         plot.background = element_blank())
 
 #And the last plot is NMDS 2 x NMDS3
-
 ggplot() + 
   stat_ellipse(data = o_sample_scores, aes(x=NMDS2,y=NMDS3,colour = Habitat), size = 1) +
   geom_point(data = o_sample_scores,mapping = aes(x = NMDS2,y = NMDS3, shape = Habitat, colour = Habitat),size=4) + # add the point markers
