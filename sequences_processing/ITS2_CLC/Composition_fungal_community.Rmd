@@ -45,6 +45,7 @@ pct_p <- (sum_phylum["unidentified"]/sum(sum_phylum))*100
 pct_asco <- (sum_phylum["Ascomycota"]/sum(sum_phylum))*100
 pct_basidio <- (sum_phylum["Basidiomycota"]/sum(sum_phylum))*100
 pct_mortie <- (sum_phylum["Mortierellomycota"]/sum(sum_phylum))*100
+(pct_muco <- (sum_phylum["Mucoromycota"]/sum(sum_phylum))*100)
 
 ##ORDER
 df_order <- na.omit(df[,-c(1:3,5:7)])
