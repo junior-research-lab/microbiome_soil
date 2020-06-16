@@ -1,0 +1,187 @@
+---
+title: "ITS2_biodiversity_indexes"
+author: "JRL"
+date: "15/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(openxlsx)
+library(tidyverse)
+library(vegan)
+library(readr)
+library(readxl)
+library(plyr)
+library(utils)
+library(estimatr)
+library(iNEXT)
+library(rareNMtests)
+library(OTUtable)
+rforge <- "http.//r-forge.r-project.org"
+install.packages("estimate", repos = rforge, dependencies = TRUE)
+```
+
+```{r import tables}
+df_phylum <- read.xlsx("ITS2_phylum_reads.xlsx")
+df_order <- read.xlsx("ITS2_order_reads.xlsx")
+df_family <- read.xlsx("ITS2_family_reads.xlsx")
+df_gender <- read.xlsx("ITS2_gender_reads.xlsx")
+```
+
+
+```{r phylum}
+
+# Phylum of ITS2 
+
+# Shannon for Phylum of ITS2
+
+View(ddply(df_phylum,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+}))
+write.csv((ddply(df_phylum,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})), file = "shann_phylum_ITS2.csv", row.names = TRUE)
+
+# Simpson for Phylum of ITS2
+
+(ddply(df_phylum,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+}))
+write.csv((ddply(df_phylum,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+})), file = "simp_phylum_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Phylum of ITS2
+
+t_df_phylum <- data.frame(t(df_phylum[-1]))
+colnames(t_df_phylum) <- df_phylum[,1]
+View(t_df_phylum)
+
+n_df_phylum <- as.numeric(df_phylum$Samples)
+View(n_df_phylum)
+chao_phylum_ITS2 <- estimateR(df_phylum)
+View(chao_phylum_ITS2)
+
+View((ddply(df_phylum,~Samples,function(x) {
+  data.frame(chao=estimateR(x[-1], index = "chao"))
+})))
+
+print(chao1(t_df_phylum))
+chao1(t_df_phylum)
+
+ChaoRichness(df_phylum$Samples, datatype = "abundance")
+
+write.csv(chao_phylum_ITS2, file = "chao.csv", row.names = TRUE)
+```
+
+```{r order}
+
+# Order of ITS2
+
+# Shannon for Order of ITS2
+
+ddply(df_order,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})
+write.csv((ddply(df_order,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})), file = "shann_order_ITS2.csv", row.names = TRUE)
+
+# Simpson for Order of ITS2
+
+(ddply(df_order,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+}))
+write.csv((ddply(df_order,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+})), file = "simp_order_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Order of ITS2
+
+chao_order_ITS2 <- estimateR(t_df_order)
+write.csv(chao_order_ITS2, file = "chao_order_ITS2.csv", row.names = TRUE)
+```
+
+```{r family}
+# Family of ITS2
+
+# Shannon for Family of ITS2
+
+ddply(df_family,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})
+write.csv((ddply(df_family,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})), file = "shann_family_ITS2.csv", row.names = TRUE)
+
+# Simpson for Family of ITS2
+
+(ddply(df_family,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+}))
+write.csv((ddply(df_family,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+})), file = "simp_family_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Family of ITS2
+
+chao_family_ITS2 <- estimateR(t_df_family)
+write.csv(chao_family_ITS2, file = "chao_family_ITS2.csv", row.names = TRUE)
+```
+
+```{r gender}
+# Gender of ITS2
+
+# Shannon for Gender of ITS2
+
+ddply(df_gender,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})
+write.csv((ddply(df_gender,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})), file = "shann_gender_ITS2.csv", row.names = TRUE)
+
+# Simpson for Gender of ITS2
+
+(ddply(df_gender,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+}))
+write.csv((ddply(df_gender,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+})), file = "simp_gender_ITS2.csv", row.names = TRUE)
+
+# Chao1 for Gender of ITS2
+
+chao_gender_ITS2 <- estimateR(t_df_gender)
+write.csv(chao_gender_ITS2, file = "chao_gender_ITS2.csv", row.names = TRUE)
+```
+
+```{r}
+# Phylum
+
+total_phylum <- rbind(shann_phylum_ITS2, simp_phylum_ITS2, chao_phylum_ITS2)
+t_total_phylum <- data.frame(t(total_phylum))
+View(t_total_phylum)
+
+# Order
+
+total_order <- rbind(shann_order_ITS2, simp_order_ITS2, chao_order_ITS2)
+t_total_order <- data.frame(t(total_order))
+View(t_total_order)
+
+# Family
+
+total_family <- rbind(shann_family_ITS2, simp_family_ITS2, chao_family_ITS2)
+t_total_family <- data.frame(t(total_family))
+View(t_total_family)
+
+# Gender
+
+total_gender <- rbind(shann_gender_ITS2, simp_gender_ITS2, chao_gender_ITS2)
+t_total_gender <- data.frame(t(total_gender))
+View(t_total_gender)
+
+```
+
