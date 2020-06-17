@@ -1,0 +1,119 @@
+---
+title: "Adonis_salinity_habitat"
+author: "JRL"
+date: "17/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(vegan)
+library(openxlsx)
+library(tidyr)
+library(dplyr)
+set.seed(222029)
+```
+
+
+```{r environnemental_data}
+# Make 2 Env data tables, one for wheat, and other for noWheat. (see section below R command
+
+env_data <- read.xlsx("sample_table_with_new_ECe_values.xlsx")
+env_data <- separate(env_data, sample_id, c("wheat_presence", "site", "replicate"), sep ="_", remove = FALSE )
+env_data <- mutate(env_data, wheat_presence = ifelse(wheat_presence == "B", 0, 1))
+env_data <- select(env_data, sample_id, site, replicate, ECe_new_value, wheat_presence)
+
+#Split the environnment table in two parts, one with wheat and one without wheat
+env_data_wheat <- filter(env_data, wheat_presence == 1)
+env_data_no_wheat <- filter(env_data, wheat_presence == 0)
+
+#Delete the samples in env_data_no_wheat that have been deleted in the rarefied table. For fungi : B_3_1, B_9_3, B_7_3, B_5_1 and B_2_3. For bacteria : B_3_1 and B_5_2 
+env_data_no_wheat_f <- filter(env_data_no_wheat, sample_id != "B_2_3", sample_id != "B_5_1", sample_id != "B_3_1", sample_id != "B_7_3", sample_id != "B_9_3")
+env_data_no_wheat_b <- filter(env_data_no_wheat, sample_id != "B_3_1", sample_id != "B_5_2")
+```
+
+```{r OTU_fungi}
+
+#Import the rarefied table for ITS2
+otu_fungi <- read.xlsx("ITS2_rarefied_table.xlsx")
+otu_fungi <- mutate(otu_fungi, Taxonomy = paste(otu_fungi$Kingdom, otu_fungi$Phylum, otu_fungi$Class, otu_fungi$Order, otu_fungi$Family, otu_fungi$Gender, otu_fungi$Species, sep =";")) %>% 
+  select(-Kingdom, -Phylum, -Class, -Order, -Family, -Gender, -Species)
+otu_fungi <- otu_fungi %>% select(Taxonomy, everything())
+
+#Transpose the table
+t_otu_fungi <- data.frame(t(otu_fungi[-1]))
+colnames(t_otu_fungi) <- otu_fungi$Taxonomy
+
+#Split the otu table in two, given the presence or absence of wheat
+otu_fungi_wheat <- t_otu_fungi[-c(grep("B.", rownames(t_otu_fungi))),]
+otu_fungi_no_wheat <- t_otu_fungi[-c(grep("R.", rownames(t_otu_fungi))),]
+```
+
+```{r otu_bacteria}
+
+#Import the rarefied table for ITS2
+otu_bact <- read.xlsx("16S_rarefied_table.xlsx")
+otu_bact <- mutate(otu_bact, Taxonomy = paste(otu_bact$Domain, otu_bact$Phylum, otu_bact$Class, otu_bact$Order, otu_bact$Family, otu_bact$Gender, otu_bact$Species, sep =";")) %>% 
+  select(-Domain, -Phylum, -Class, -Order, -Family, -Gender, -Species)
+otu_bact <- otu_bact %>% select(Taxonomy, everything())
+
+#Transpose the table
+t_otu_bact <- data.frame(t(otu_bact[-1]))
+colnames(t_otu_bact) <- otu_bact$Taxonomy
+
+#Split the otu table in two, given the presence or absence of wheat
+otu_bact_wheat <- t_otu_bact[-c(grep("B.", rownames(t_otu_bact))),]
+otu_bact_no_wheat <- t_otu_bact[-c(grep("R.", rownames(t_otu_bact))),]
+```
+
+```{r total_otu}
+
+
+
+```
+
+
+```{r stats}
+
+########## FUNGI ##########
+
+# Make bray curtis distance matrix from otu tables
+bray_otu_fungi_wheat <- vegdist(otu_fungi_wheat, method="bray")
+bray_otu_fungi_no_wheat  <- vegdist(otu_fungi_no_wheat, method="bray")
+
+# Run adonis
+adonis(bray_otu_fungi_wheat ~ ECe_new_value, data = env_data_wheat, strata = site, perm=999)
+adonis(bray_otu_fungi_no_wheat ~ ECe_new_value, data = env_data_no_wheat_f, strata = site, perm=999)
+
+########## BACTERIA ##########
+
+# Make bray curtis distance matrix from otu tables
+bray_otu_bact_wheat <- vegdist(otu_bact_wheat, method="bray")
+bray_otu_bact_no_wheat  <- vegdist(otu_bact_no_wheat, method="bray")
+
+# Run adonis
+adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = site, perm=999)
+adonis(bray_otu_bact_no_wheat ~ ECe_new_value, data = env_data_no_wheat_b,  strata = site, perm=999)
+
+########## BOTH ##########
+
+# Merge the two otu tables with wheat
+otu_bact_wheat <- tibble::rownames_to_column(otu_bact_wheat, "sample_id")
+otu_fungi_wheat <- tibble::rownames_to_column(otu_fungi_wheat, "sample_id")
+otu_both_wheat <- merge(x = otu_fungi_wheat, y = otu_bact_wheat, by = "sample_id" )
+rownames(otu_both_wheat) <- otu_both_wheat$sample_id
+otu_both_wheat <- select(otu_both_wheat, -sample_id)
+
+# Merge the two otu tables without wheat
+
+# Make bray curtis distance matrix from otu tables
+bray_otu_both_wheat <- vegdist(otu_both_wheat, method="bray")
+bray_otu_both_no_wheat  <- vegdist(otu_both_no_wheat, method="bray")
+
+# Run adonis
+adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = site, perm = 999)
+adonis(bray_otu_bact_no_wheat ~ ECe_new_value, data = env_data_no_wheat_b, strata = site, perm = 999)
+
+```
+
+
