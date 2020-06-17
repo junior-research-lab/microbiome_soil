@@ -1,0 +1,205 @@
+---
+title: "10 Most importante taxonomy 16S"
+author: "JRL"
+date: "15/06/2020"
+output: html_document
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
+library(openxlsx)
+library(ggplot2)
+library(tidyverse)
+```
+
+```{r cars}
+(df <- as.data.frame(read.xlsx("~/Documentos/SupAgro - Facul/JRL/microbiome_soil-master/microbiome_soil-master/sequences_processing/16S/16S_results/16S_rarefied_table.xlsx")))
+# Tidy the names from the imported table (no spaces, no number in taxonomic columns)
+df$Phylum <- gsub(" ","", df$Phylum)
+df$Order <- gsub(" ", "", df$Order)
+df$Family <- gsub(" ", "", df$Family)
+df$Gender <- gsub(" ", "", df$Gender)
+df$Gender <- gsub("\\d","", df$Gender)
+df$Gender <- gsub("([[:punct:]]\\d)","", df$Gender)
+
+```
+
+```{r percentages_per_read}
+## PHYLUM
+df_phylum <- na.omit(df[,-c(1,3:7)])
+ad0 <- as.vector(NULL)
+sum_phylum_o <- as.vector(NULL)
+for (s in 2:ncol(df_phylum)) {
+  sum_phylum <- tapply(df_phylum[,s], as.factor(df_phylum$Phylum), sum)
+  sum_phylum_o <- cbind(sum_phylum_o, sum_phylum)
+   ad <- tapply(df_phylum[,s], as.factor(df_phylum$Phylum), sum)*100 / sum(df_phylum[,s])
+   ad0 <- cbind(ad0,ad)
+}
+colnames(ad0)<-names(df_phylum)[2:ncol(df_phylum)]
+colnames(sum_phylum_o)<-names(df_phylum)[2:ncol(df_phylum)]
+
+#Percentage of unidentified phylum
+pct_p <- (sum_phylum_o["unidentified"]/sum(sum_phylum_o["unidentified"]))*100
+
+#Ten most important 
+
+sort(rowSums(ad0), decreasing = TRUE)[1:10]
+
+# last computation
+
+sum_phylum_10m <-sum_phylum_o[names(sort(rowSums(ad0),
+                                       decreasing = TRUE)[1:10]),]
+
+rowSums(sum_phylum_10m)/sum(sum_phylum_o)*100
+
+
+```
+
+```{r percentages_per_read}
+##ORDER
+df_order <- na.omit(df[,-c(1:3,5:7)])
+ad0_o <- as.vector(NULL)
+sum_order_o <- as.vector(NULL)
+for (s in 2:ncol(df_order)) {
+  sum_order <- tapply(df_order[,s], as.factor(df_order$Order), sum)
+  sum_order_o <- cbind(sum_order_o, sum_order)
+   ad_o <- tapply(df_order[,s], as.factor(df_order$Order), sum)*100 / sum(df_order[,s])
+   ad0_o <- cbind(ad0_o,ad_o)
+}
+colnames(ad0_o)<-names(df_order)[2:ncol(df_order)]
+colnames(sum_order_o)<-names(df_order)[2:ncol(df_order)]
+
+
+#Pct unidentified order
+pct_o <- (sum_order_o["unidentified",]/sum(sum_order_o["unidentified",]))*100
+
+#Ten most important 
+
+sort(rowSums(ad0_o), decreasing = TRUE)[1:10]
+
+# last computation
+
+sum_order_10m <-sum_order_o[names(sort(rowSums(ad0_o),
+                                       decreasing = TRUE)[1:10]),]
+
+rowSums(sum_order_10m)/sum(sum_order_o)*100
+
+
+```
+
+```{r percentages_per_read}
+##FAMILY
+df_family <- na.omit(df[,-c(1:4,6:7)])
+ad0_f <- as.vector(NULL)
+sum_family_o <- as.vector(NULL)
+for (s in 2:ncol(df_family)) {
+  sum_family <- tapply(df_family[,s], as.factor(df_family$Family), sum)
+  sum_family_o <- cbind(sum_family_o, sum_family)
+  ad_f <- tapply(df_family[,s], as.factor(df_family$Family), sum)*100 / sum(df_family[,s])
+  ad0_f <- cbind(ad0_f,ad_f)
+}
+colnames(ad0_f)<-names(df_family)[2:ncol(df_family)]
+colnames(sum_family_o)<-names(df_family)[2:ncol(df_family)]
+
+#Percentage of unidentified family
+pct_f <- (sum_family_o["unidentified"]/sum(sum_family_o))*100
+
+#Ten most important 
+
+sort(rowSums(ad0_f), decreasing = TRUE)[1:10]
+
+# last computation
+
+sum_family_10m <-sum_family_o[names(sort(rowSums(ad0_f),
+                                       decreasing = TRUE)[1:10]),]
+
+rowSums(sum_family_10m)/sum(sum_family_o)*100
+
+```
+
+```{r percentages_per_read}
+##GENDER
+df_gender <- na.omit(df[,-c(1:5,7)])
+ad0_g <- as.vector(NULL)
+sum_gender_o <- as.vector(NULL)
+for (s in 2:ncol(df_gender)) {
+  sum_gender <- tapply(df_gender[,s], as.factor(df_gender$Gender), sum)
+  sum_gender_o <- cbind(sum_gender_o, sum_gender)
+  ad_g <- tapply(df_gender[,s], as.factor(df_gender$Gender), sum)*100 / sum(df_gender[,s])
+  ad0_g <- cbind(ad0_g,ad_g)
+}
+colnames(ad0_g)<-names(df_gender)[2:ncol(df_gender)]
+colnames(sum_gender_o)<-names(df_gender)[2:ncol(df_gender)]
+
+#Percentage of unidentified gender
+pct_g <- (sum_gender_o["unidentified"]/sum(sum_gender_o))*100
+
+#Ten most important 
+
+sort(rowSums(ad0_g), decreasing = TRUE)[1:10]
+
+# last computation
+
+sum_gender_10m <-sum_gender_o[names(sort(rowSums(ad0_g),
+                                       decreasing = TRUE)[1:10]),]
+
+rowSums(sum_gender_10m)/sum(sum_gender_o)*100
+```
+
+```{r percentages_per_read}
+##CLASS
+df_class <- na.omit(df[,-c(1:2,4:7)])
+ad0_c <- as.vector(NULL)
+sum_class_o <- as.vector(NULL)
+for (s in 2:ncol(df_class)) {
+  sum_class <- tapply(df_class[,s], as.factor(df_class$Class), sum)
+  sum_class_o <- cbind(sum_class_o, sum_class)
+  ad_c <- tapply(df_class[,s], as.factor(df_class$Class), sum)*100 / sum(df_class[,s])
+  ad0_c <- cbind(ad0_c,ad_c)
+}
+colnames(ad0_c)<-names(df_class)[2:ncol(df_class)]
+colnames(sum_class_o)<-names(df_class)[2:ncol(df_class)]
+
+#Percentage of unidentified class
+pct_c <- (sum_class_o["unidentified"]/sum(sum_class_o))*100
+
+#Ten most important 
+
+sort(rowSums(ad0_c), decreasing = TRUE)[1:10]
+
+# last computation
+
+sum_class_10m <-sum_class_o[names(sort(rowSums(ad0_c),
+                                       decreasing = TRUE)[1:10]),]
+
+rowSums(sum_class_10m)/sum(sum_class_o)*100
+```
+
+```{r percentages_per_read}
+##SPECIES
+df_species <- na.omit(df[,-c(1:6)])
+ad0_s <- as.vector(NULL)
+sum_species_o <- as.vector(NULL)
+for (s in 2:ncol(df_species)) {
+  sum_species <- tapply(df_species[,s], as.factor(df_species$Species), sum)
+    sum_species_o <- cbind(sum_species_o, sum_species)
+  ad_s <- tapply(df_species[,s], as.factor(df_species$Species), sum)*100 / sum(df_species[,s])
+  ad0_s <- cbind(ad0_s,ad_s)
+}
+colnames(ad0_s)<-names(df_species)[2:ncol(df_species)]
+colnames(sum_species_o)<-names(df_species)[2:ncol(df_species)]
+
+#Percentage of unidentified species
+pct_s <- (sum_species_o["unidentified"]/sum(sum_species_o))*100
+
+#Ten most important 
+
+sort(rowSums(ad0_s), decreasing = TRUE)[1:10]
+
+# last computation
+
+sum_species_10m <-sum_species_o[names(sort(rowSums(ad0_s),
+                                       decreasing = TRUE)[1:10]),]
+
+rowSums(sum_species_10m)/sum(sum_species_o)*100
+```
