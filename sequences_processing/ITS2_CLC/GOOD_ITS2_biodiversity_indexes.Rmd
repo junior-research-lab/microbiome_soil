@@ -16,18 +16,28 @@ library(readxl)
 library(plyr)
 library(utils)
 library(estimatr)
-library(iNEXT)
-library(rareNMtests)
-library(OTUtable)
-rforge <- "http.//r-forge.r-project.org"
-install.packages("estimate", repos = rforge, dependencies = TRUE)
+library(ggpubr)
 ```
 
 ```{r import tables}
-df_phylum <- read.xlsx("ITS2_phylum_reads.xlsx")
-df_order <- read.xlsx("ITS2_order_reads.xlsx")
-df_family <- read.xlsx("ITS2_family_reads.xlsx")
-df_gender <- read.xlsx("ITS2_gender_reads.xlsx")
+df_phylum <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_phylum_reads.xlsx")
+df_order <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_order_reads.xlsx")
+df_family <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_family_reads.xlsx")
+df_gender <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_gender_reads.xlsx")
+
+# Import the S1 table
+
+S1_table <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/S1_table.xlsx")
+View(S1_table)
+
+# Change format to .csv
+
+write.csv(S1_table, file = "S1_table.csv", row.names = TRUE)
+
+#Delete the same samples as ITS2
+
+S1_table <- S1_table[-c(3, 4, 10, 18, 24), ]
+
 ```
 
 
@@ -35,45 +45,113 @@ df_gender <- read.xlsx("ITS2_gender_reads.xlsx")
 
 # Phylum of ITS2 
 
+
 # Shannon for Phylum of ITS2
 
-View(ddply(df_phylum,~Samples,function(x) {
+shannon_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
   data.frame(SHANNON=diversity(x[-1], index = "shannon"))
-}))
-write.csv((ddply(df_phylum,~Samples,function(x) {
-  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
-})), file = "shann_phylum_ITS2.csv", row.names = TRUE)
+})
+write.csv(shannon_phylum_ITS2, file = "shannon_phylum_ITS2.csv", row.names = TRUE)
+
 
 # Simpson for Phylum of ITS2
 
-(ddply(df_phylum,~Samples,function(x) {
+simpson_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
   data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-}))
-write.csv((ddply(df_phylum,~Samples,function(x) {
-  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-})), file = "simp_phylum_ITS2.csv", row.names = TRUE)
+})
+write.csv(simpson_phylum_ITS2, file = "simpson_phylum_ITS2.csv", row.names = TRUE)
+
 
 # Chao1 for Phylum of ITS2
 
 t_df_phylum <- data.frame(t(df_phylum[-1]))
 colnames(t_df_phylum) <- df_phylum[,1]
-View(t_df_phylum)
 
-n_df_phylum <- as.numeric(df_phylum$Samples)
-View(n_df_phylum)
-chao_phylum_ITS2 <- estimateR(df_phylum)
-View(chao_phylum_ITS2)
+#Trial 1
+a_chao_phylum_ITS2 <- estimateR(t_df_phylum)
+View(a_chao_phylum_ITS2)
 
-View((ddply(df_phylum,~Samples,function(x) {
-  data.frame(chao=estimateR(x[-1], index = "chao"))
-})))
-
-print(chao1(t_df_phylum))
-chao1(t_df_phylum)
-
-ChaoRichness(df_phylum$Samples, datatype = "abundance")
+#Trial 2
+b_chao_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
+  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+})
+View(b_chao_phylum_ITS2)
 
 write.csv(chao_phylum_ITS2, file = "chao.csv", row.names = TRUE)
+
+
+# Merge biodiversity indexes
+
+bi_phylum_ITS2 <- merge(shannon_phylum_ITS2, simpson_phylum_ITS2, by = "Samples")
+
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_phylum_ITS2,"bi_phylum_ITS2.xlsx")
+write.csv(bi_phylum_ITS2, file = "bi_phylum_ITS2.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#Merge bi and S1 tables
+data_phylum_ITS2 <- merge(bi_phylum_ITS2, S1_table, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_phy_ITS2_shann <- cor.test(x=data_phylum_ITS2$`ECe _values`, y=data_phylum_ITS2$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_phy_ITS2_shann
+
+# Manually calculating
+
+phy.ranked.shann <- data.frame(cbind(rank(data_phylum_ITS2$`ECe _values`, ties.method = "average"), rank(data_phylum_ITS2$SHANNON, ties.method = "average")))
+
+colnames(phy.ranked.shann) <- c("ECe_values", "SHANNON")
+
+rho <- cov(phy.ranked.shann) / (sd(phy.ranked.shann$ECe_values) * sd(phy.ranked.shann$SHANNON))
+
+rho[[2]]
+
+corr_phy_ITS2_shann$estimate
+
+corr_phy_ITS2_shann$statistic
+
+corr_phy_ITS2_shann$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_phy_ITS2_sim <- cor.test(x=data_phylum_ITS2$`ECe _values`, y=data_phylum_ITS2$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_phy_ITS2_sim
+
+# Manually calculating
+
+phy.ranked.sim <- data.frame(cbind(rank(data_phylum_ITS2$`ECe _values`, ties.method = "average"), rank(data_phylum_ITS2$SIMPSON, ties.method = "average")))
+
+colnames(phy.ranked.sim) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(phy.ranked.sim) / (sd(phy.ranked.sim$ECe_values) * sd(phy.ranked.sim$SIMPSON))
+
+rho[[2]]
+
+corr_phy_ITS2_sim$estimate
+
+corr_phy_ITS2_sim$statistic
+
+corr_phy_ITS2_sim$p.value
+```
+```{r}
+
+
+```
+```{r}
+
 ```
 
 ```{r order}
@@ -82,26 +160,87 @@ write.csv(chao_phylum_ITS2, file = "chao.csv", row.names = TRUE)
 
 # Shannon for Order of ITS2
 
-ddply(df_order,~Samples,function(x) {
+shannon_order_ITS2 <- ddply(df_order,~Samples,function(x) {
   data.frame(SHANNON=diversity(x[-1], index = "shannon"))
 })
-write.csv((ddply(df_order,~Samples,function(x) {
-  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
-})), file = "shann_order_ITS2.csv", row.names = TRUE)
+write.csv(shannon_order_ITS2, file = "shannon_order_ITS2.csv", row.names = TRUE)
 
 # Simpson for Order of ITS2
 
-(ddply(df_order,~Samples,function(x) {
+simpson_order_ITS2 <- ddply(df_order,~Samples,function(x) {
   data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-}))
-write.csv((ddply(df_order,~Samples,function(x) {
-  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-})), file = "simp_order_ITS2.csv", row.names = TRUE)
+})
+write.csv(simpson_order_ITS2, file = "simpson_order_ITS2.csv", row.names = TRUE)
 
 # Chao1 for Order of ITS2
 
-chao_order_ITS2 <- estimateR(t_df_order)
-write.csv(chao_order_ITS2, file = "chao_order_ITS2.csv", row.names = TRUE)
+
+
+# Merge biodiversity indexes
+
+bi_order_ITS2 <- merge(shannon_order_ITS2, simpson_order_ITS2, by = "Samples")
+
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_order_ITS2,"bi_order_ITS2.xlsx")
+write.csv(bi_order_ITS2, file = "bi_order_ITS2.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#Merge bi and S1 tables
+data_order_ITS2 <- merge(bi_order_ITS2, S1_table, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_order_ITS2_shann <- cor.test(x=data_order_ITS2$`ECe _values`, y=data_order_ITS2$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_order_ITS2_shann
+
+# Manually calculating
+
+order.ranked.shann <- data.frame(cbind(rank(data_order_ITS2$`ECe _values`, ties.method = "average"), rank(data_order_ITS2$SHANNON, ties.method = "average")))
+
+colnames(order.ranked.shann) <- c("ECe_values", "SHANNON")
+
+rho <- cov(order.ranked.shann) / (sd(order.ranked.shann$ECe_values) * sd(order.ranked.shann$SHANNON))
+
+rho[[2]]
+
+corr_order_ITS2_shann$estimate
+
+corr_order_ITS2_shann$statistic
+
+corr_order_ITS2_shann$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_order_ITS2_sim <- cor.test(x=data_order_ITS2$`ECe _values`, y=data_order_ITS2$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_order_ITS2_sim
+
+# Manually calculating
+
+order.ranked.sim <- data.frame(cbind(rank(data_order_ITS2$`ECe _values`, ties.method = "average"), rank(data_order_ITS2$SIMPSON, ties.method = "average")))
+
+colnames(order.ranked.sim) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(order.ranked.sim) / (sd(order.ranked.sim$ECe_values) * sd(order.ranked.sim$SIMPSON))
+
+rho[[2]]
+
+corr_order_ITS2_sim$estimate
+
+corr_order_ITS2_sim$statistic
+
+corr_order_ITS2_sim$p.value
 ```
 
 ```{r family}
@@ -109,26 +248,87 @@ write.csv(chao_order_ITS2, file = "chao_order_ITS2.csv", row.names = TRUE)
 
 # Shannon for Family of ITS2
 
-ddply(df_family,~Samples,function(x) {
+shannon_family_ITS2 <- ddply(df_family,~Samples,function(x) {
   data.frame(SHANNON=diversity(x[-1], index = "shannon"))
 })
-write.csv((ddply(df_family,~Samples,function(x) {
-  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
-})), file = "shann_family_ITS2.csv", row.names = TRUE)
+write.csv(shannon_family_ITS2, file = "shannon_family_ITS2.csv", row.names = TRUE)
 
 # Simpson for Family of ITS2
 
-(ddply(df_family,~Samples,function(x) {
+simpson_family_ITS2 <- ddply(df_family,~Samples,function(x) {
   data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-}))
-write.csv((ddply(df_family,~Samples,function(x) {
-  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-})), file = "simp_family_ITS2.csv", row.names = TRUE)
+})
+write.csv(simpson_family_ITS2, file = "simpson_family_ITS2.csv", row.names = TRUE)
 
 # Chao1 for Family of ITS2
 
-chao_family_ITS2 <- estimateR(t_df_family)
-write.csv(chao_family_ITS2, file = "chao_family_ITS2.csv", row.names = TRUE)
+
+
+# Merge biodiversity indexes
+
+bi_family_ITS2 <- merge(shannon_family_ITS2, simpson_family_ITS2, by = "Samples")
+
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_family_ITS2,"bi_family_ITS2.xlsx")
+write.csv(bi_family_ITS2, file = "bi_family_ITS2.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#Merge bi and S1 tables
+data_family_ITS2 <- merge(bi_family_ITS2, S1_table, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_family_ITS2_shann <- cor.test(x=data_family_ITS2$`ECe _values`, y=data_family_ITS2$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_family_ITS2_shann
+
+# Manually calculating
+
+family.ranked.shann <- data.frame(cbind(rank(data_family_ITS2$`ECe _values`, ties.method = "average"), rank(data_family_ITS2$SHANNON, ties.method = "average")))
+
+colnames(family.ranked.shann) <- c("ECe_values", "SHANNON")
+
+rho <- cov(family.ranked.shann) / (sd(family.ranked.shann$ECe_values) * sd(family.ranked.shann$SHANNON))
+
+rho[[2]]
+
+corr_family_ITS2_shann$estimate
+
+corr_family_ITS2_shann$statistic
+
+corr_family_ITS2_shann$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_family_ITS2_sim <- cor.test(x=data_family_ITS2$`ECe _values`, y=data_family_ITS2$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_family_ITS2_sim
+
+# Manually calculating
+
+family.ranked.sim <- data.frame(cbind(rank(data_family_ITS2$`ECe _values`, ties.method = "average"), rank(data_family_ITS2$SIMPSON, ties.method = "average")))
+
+colnames(family.ranked.sim) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(family.ranked.sim) / (sd(family.ranked.sim$ECe_values) * sd(family.ranked.sim$SIMPSON))
+
+rho[[2]]
+
+corr_family_ITS2_sim$estimate
+
+corr_family_ITS2_sim$statistic
+
+corr_family_ITS2_sim$p.value
 ```
 
 ```{r gender}
@@ -136,50 +336,114 @@ write.csv(chao_family_ITS2, file = "chao_family_ITS2.csv", row.names = TRUE)
 
 # Shannon for Gender of ITS2
 
-ddply(df_gender,~Samples,function(x) {
+shannon_gender_ITS2 <- ddply(df_gender,~Samples,function(x) {
   data.frame(SHANNON=diversity(x[-1], index = "shannon"))
 })
-write.csv((ddply(df_gender,~Samples,function(x) {
-  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
-})), file = "shann_gender_ITS2.csv", row.names = TRUE)
+write.csv(shannon_gender_ITS2, file = "shannon_gender_ITS2.csv", row.names = TRUE)
 
 # Simpson for Gender of ITS2
 
-(ddply(df_gender,~Samples,function(x) {
+simpson_gender_ITS2 <- ddply(df_gender,~Samples,function(x) {
   data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-}))
-write.csv((ddply(df_gender,~Samples,function(x) {
-  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
-})), file = "simp_gender_ITS2.csv", row.names = TRUE)
+})
+write.csv(simpson_gender_ITS2, file = "simpson_gender_ITS2.csv", row.names = TRUE)
 
 # Chao1 for Gender of ITS2
 
-chao_gender_ITS2 <- estimateR(t_df_gender)
-write.csv(chao_gender_ITS2, file = "chao_gender_ITS2.csv", row.names = TRUE)
+
+
+
+# Merge biodiversity indexes
+
+bi_gender_ITS2 <- merge(shannon_gender_ITS2, simpson_gender_ITS2, by = "Samples")
+
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_gender_ITS2,"bi_gender_ITS2.xlsx")
+write.csv(bi_gender_ITS2, file = "bi_gender_ITS2.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#Merge bi and S1 tables
+data_gender_ITS2 <- merge(bi_gender_ITS2, S1_table, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_gender_ITS2_shann <- cor.test(x=data_gender_ITS2$`ECe _values`, y=data_gender_ITS2$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_gender_ITS2_shann
+
+# Manually calculating
+
+gender.ranked.shann <- data.frame(cbind(rank(data_gender_ITS2$`ECe _values`, ties.method = "average"), rank(data_gender_ITS2$SHANNON, ties.method = "average")))
+
+colnames(gender.ranked.shann) <- c("ECe_values", "SHANNON")
+
+rho <- cov(gender.ranked.shann) / (sd(gender.ranked.shann$ECe_values) * sd(gender.ranked.shann$SHANNON))
+
+rho[[2]]
+
+corr_gender_ITS2_shann$estimate
+
+corr_gender_ITS2_shann$statistic
+
+corr_gender_ITS2_shann$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_gender_ITS2_sim <- cor.test(x=data_gender_ITS2$`ECe _values`, y=data_gender_ITS2$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_gender_ITS2_sim
+
+# Manually calculating
+
+gender.ranked.sim <- data.frame(cbind(rank(data_gender_ITS2$`ECe _values`, ties.method = "average"), rank(data_gender_ITS2$SIMPSON, ties.method = "average")))
+
+colnames(gender.ranked.sim) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(gender.ranked.sim) / (sd(gender.ranked.sim$ECe_values) * sd(gender.ranked.sim$SIMPSON))
+
+rho[[2]]
+
+corr_gender_ITS2_sim$estimate
+
+corr_gender_ITS2_sim$statistic
+
+corr_gender_ITS2_sim$p.value
 ```
+```
+
 
 ```{r}
 # Phylum
 
-total_phylum <- rbind(shann_phylum_ITS2, simp_phylum_ITS2, chao_phylum_ITS2)
+total_phylum <- rbind(shannon_phylum_ITS2, simpson_phylum_ITS2, chao_phylum_ITS2)
 t_total_phylum <- data.frame(t(total_phylum))
 View(t_total_phylum)
 
 # Order
 
-total_order <- rbind(shann_order_ITS2, simp_order_ITS2, chao_order_ITS2)
+total_order <- rbind(shannon_order_ITS2, simpson_order_ITS2, chao_order_ITS2)
 t_total_order <- data.frame(t(total_order))
 View(t_total_order)
 
 # Family
 
-total_family <- rbind(shann_family_ITS2, simp_family_ITS2, chao_family_ITS2)
+total_family <- rbind(shannon_family_ITS2, simpson_family_ITS2, chao_family_ITS2)
 t_total_family <- data.frame(t(total_family))
 View(t_total_family)
 
 # Gender
 
-total_gender <- rbind(shann_gender_ITS2, simp_gender_ITS2, chao_gender_ITS2)
+total_gender <- rbind(shannon_gender_ITS2, simpson_gender_ITS2, chao_gender_ITS2)
 t_total_gender <- data.frame(t(total_gender))
 View(t_total_gender)
 
