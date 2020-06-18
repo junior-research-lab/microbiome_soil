@@ -123,7 +123,7 @@ for (s in 1:ncol(otu_bact_wheat)) {
 }
 
 #Other way to calculate the spearman correlation (should work better maybe for the q-values)
-Hmisc::rcorr(otu_bact_wheat,as.vector(env_data_wheat$ECe_new_value), type = "spearman")
+spearman <- Hmisc::rcorr(as.matrix(otu_bact_wheat),env_data_wheat$ECe_new_value, type = "spearman")
 
 # The second step is to correct the p-values obtained given that the otu can be correlated.
 ad0_bact_wheat_v <- as.vector(ad0_bact_wheat)
