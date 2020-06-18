@@ -66,12 +66,6 @@ otu_bact_wheat <- t_otu_bact[-c(grep("B.", rownames(t_otu_bact))),]
 otu_bact_no_wheat <- t_otu_bact[-c(grep("R.", rownames(t_otu_bact))),]
 ```
 
-```{r total_otu}
-
-
-
-```
-
 
 ```{r stats}
 
@@ -82,8 +76,8 @@ bray_otu_fungi_wheat <- vegdist(otu_fungi_wheat, method="bray")
 bray_otu_fungi_no_wheat  <- vegdist(otu_fungi_no_wheat, method="bray")
 
 # Run adonis
-adonis(bray_otu_fungi_wheat ~ ECe_new_value, data = env_data_wheat, strata = site, perm=999)
-adonis(bray_otu_fungi_no_wheat ~ ECe_new_value, data = env_data_no_wheat_f, strata = site, perm=999)
+adonis(bray_otu_fungi_wheat ~ ECe_new_value, data = env_data_wheat, strata = env_data_wheat$site, perm=999)
+adonis(bray_otu_fungi_no_wheat ~ ECe_new_value, data = env_data_no_wheat_f, strata = env_data_no_wheat_f$site, perm=999)
 
 ########## BACTERIA ##########
 
@@ -92,15 +86,15 @@ bray_otu_bact_wheat <- vegdist(otu_bact_wheat, method="bray")
 bray_otu_bact_no_wheat  <- vegdist(otu_bact_no_wheat, method="bray")
 
 # Run adonis
-adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = site, perm=999)
-adonis(bray_otu_bact_no_wheat ~ ECe_new_value, data = env_data_no_wheat_b,  strata = site, perm=999)
+adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = env_data_wheat$site, perm=999)
+adonis(bray_otu_bact_no_wheat ~ ECe_new_value, data = env_data_no_wheat_b,  strata = env_data_no_wheat_b$site, perm=999)
 
 ########## BOTH ##########
 
 # Merge the two otu tables with wheat
-otu_bact_wheat <- tibble::rownames_to_column(otu_bact_wheat, "sample_id")
-otu_fungi_wheat <- tibble::rownames_to_column(otu_fungi_wheat, "sample_id")
-otu_both_wheat <- merge(x = otu_fungi_wheat, y = otu_bact_wheat, by = "sample_id" )
+otu_bact_wheat2 <- tibble::rownames_to_column(otu_bact_wheat, "sample_id")
+otu_fungi_wheat2 <- tibble::rownames_to_column(otu_fungi_wheat, "sample_id")
+otu_both_wheat <- merge(x = otu_fungi_wheat2, y = otu_bact_wheat2, by = "sample_id" )
 rownames(otu_both_wheat) <- otu_both_wheat$sample_id
 otu_both_wheat <- select(otu_both_wheat, -sample_id)
 
@@ -108,11 +102,36 @@ otu_both_wheat <- select(otu_both_wheat, -sample_id)
 
 # Make bray curtis distance matrix from otu tables
 bray_otu_both_wheat <- vegdist(otu_both_wheat, method="bray")
-bray_otu_both_no_wheat  <- vegdist(otu_both_no_wheat, method="bray")
 
 # Run adonis
-adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = site, perm = 999)
-adonis(bray_otu_bact_no_wheat ~ ECe_new_value, data = env_data_no_wheat_b, strata = site, perm = 999)
+adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = env_data_wheat$site, perm = 999)
+```
+
+```{r heatmap_bacteria_wheat}
+#The first steps aim at doing a table with the p-value of the spearman's correlation between salinity and each of the bacteria OTU
+
+## Remove the otu where there is no read
+
+no_zero <- colSums(otu_bact_wheat)
+otu_bact_wheat <- otu_bact_wheat[-c(which(no_zero == 0, arr.ind = TRUE))]
+
+## Calculate the spearman correlation
+ad0_bact_wheat <- as.vector(NULL)
+for (s in 1:ncol(otu_bact_wheat)) {
+  ad_bact_wheat <- cor(x = otu_bact_wheat[,s], y = env_data_wheat$ECe_new_value, method = "spearman" )
+  ad0_bact_wheat <- cbind(ad0_bact_wheat, ad_bact_wheat)
+}
+
+#Other way to calculate the spearman correlation (should work better maybe for the q-values)
+Hmisc::rcorr(otu_bact_wheat,as.vector(env_data_wheat$ECe_new_value), type = "spearman")
+
+# The second step is to correct the p-values obtained given that the otu can be correlated.
+ad0_bact_wheat_v <- as.vector(ad0_bact_wheat)
+adjusted_wheat <- fdrtool::fdrtool(ad0_bact_wheat_v, "correlation")
+p_val_wheat <- adjusted_wheat["pval"]
+
+p_val_wheat <- as.matrix(p_val_wheat[[1]])
+colnames(p_val_wheat) <- names(otu_bact_wheat[1:ncol(otu_bact_wheat)])
 
 ```
 
