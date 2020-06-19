@@ -68,7 +68,7 @@ simpson_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
 chao_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
   data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_phylum_ITS2)
+
 
 # ACE for Phylum of ITS2
 ACE_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
@@ -116,18 +116,6 @@ corr_phy_ITS2_shann$estimate
 corr_phy_ITS2_shann$statistic
 
 corr_phy_ITS2_shann$p.value
-
-# Plot SHANNON for ITS2
-
-ggscatter(phy.ranked.shann, x = "ECe_values", y = "SHANNON",
-            color = "black", shape = 21, size = 3,
-            add = "reg.line", add.params = list(color = "blue", fill = "lightgray"),
-            conf.int = TRUE,
-            cor.coef = TRUE,
-            cor.method = "spearman",
-            xlab = "ECe_value", ylab = "SHANNON") + geom_point()
-
-
 
 # Spearman correlation for SIMPSON
 
@@ -317,13 +305,7 @@ kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_R)
 
 
 ```
-```{r}
 
-
-```
-```{r}
-
-```
 
 ```{r order}
 
@@ -334,29 +316,30 @@ kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_R)
 shannon_order_ITS2 <- ddply(df_order,~Samples,function(x) {
   data.frame(SHANNON=diversity(x[-1], index = "shannon"))
 })
-write.csv(shannon_order_ITS2, file = "shannon_order_ITS2.csv", row.names = TRUE)
 
 # Simpson for Order of ITS2
 
 simpson_order_ITS2 <- ddply(df_order,~Samples,function(x) {
   data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
 })
-write.csv(simpson_order_ITS2, file = "simpson_order_ITS2.csv", row.names = TRUE)
 
 # Chao1 for Order of ITS2
 
 chao_order_ITS2 <- ddply(df_order,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_order_ITS2)
-write.csv(chao_order_ITS2, file = "chao1_order_ITS2.csv", row.names = TRUE)
 
 
+# ACE for Phylum of ITS2
+ACE_order_ITS2 <- ddply(df_order,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_order_ITS2 <- merge(shannon_order_ITS2, simpson_order_ITS2, by = "Samples")
-
+bi_order_ITS2 <- merge(shannon_order_ITS2, simpson_order_ITS2,  by = "Samples")
+bi_order_ITS2 <- merge(bi_order_ITS2,chao_order_ITS2, by = "Samples")
+bi_order_ITS2 <- merge(bi_order_ITS2,ACE_order_ITS2, by = "Samples")
 
 # Export the merged table in excel and .csv
 
@@ -597,18 +580,22 @@ simpson_family_ITS2 <- ddply(df_family,~Samples,function(x) {
 })
 write.csv(simpson_family_ITS2, file = "simpson_family_ITS2.csv", row.names = TRUE)
 
-# Chao1 for Family of ITS2
+# Chao1 for family of ITS2
 
 chao_family_ITS2 <- ddply(df_family,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_family_ITS2)
-write.csv(chao_family_ITS2, file = "chao1_family_ITS2.csv", row.names = TRUE)
 
+# ACE for Phylum of ITS2
+ACE_family_ITS2 <- ddply(df_family,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_family_ITS2 <- merge(shannon_family_ITS2, simpson_family_ITS2, by = "Samples")
+bi_family_ITS2 <- merge(shannon_family_ITS2, simpson_family_ITS2,  by = "Samples")
+bi_family_ITS2 <- merge(bi_family_ITS2,chao_family_ITS2, by = "Samples")
+bi_family_ITS2 <- merge(bi_family_ITS2,ACE_family_ITS2, by = "Samples")
 
 
 # Export the merged table in excel and .csv
@@ -850,19 +837,22 @@ simpson_gender_ITS2 <- ddply(df_gender,~Samples,function(x) {
 })
 write.csv(simpson_gender_ITS2, file = "simpson_gender_ITS2.csv", row.names = TRUE)
 
-# Chao1 for Gender of ITS2
+# Chao1 for family of ITS2
 
 chao_gender_ITS2 <- ddply(df_gender,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_gender_ITS2)
-write.csv(chao_gender_ITS2, file = "chao1_gender_ITS2.csv", row.names = TRUE)
 
-
+# ACE for Phylum of ITS2
+ACE_gender_ITS2 <- ddply(df_gender,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_gender_ITS2 <- merge(shannon_gender_ITS2, simpson_gender_ITS2, by = "Samples")
+bi_gender_ITS2 <- merge(shannon_gender_ITS2, simpson_gender_ITS2,  by = "Samples")
+bi_gender_ITS2 <- merge(bi_gender_ITS2,chao_gender_ITS2, by = "Samples")
+bi_gender_ITS2 <- merge(bi_gender_ITS2,ACE_gender_ITS2, by = "Samples")
 
 
 # Export the merged table in excel and .csv
