@@ -25,7 +25,7 @@ df_gender <- read_excel("ITS2_gender_reads.xlsx")
 
 # Import the S1 table
 
-S1_table <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/S1_table.xlsx")
+S1_table <- read_excel("S1_table.xlsx")
 View(S1_table)
 
 # Change format to .csv
@@ -54,7 +54,6 @@ S1_table_ITS2 <- S1_table[-c(3, 4, 10, 18, 24), ]
 shannon_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
   data.frame(SHANNON=diversity(x[-1], index = "shannon"))
 })
-write.csv(shannon_phylum_ITS2, file = "shannon_phylum_ITS2.csv", row.names = TRUE)
 
 
 # Simpson for Phylum of ITS2
@@ -62,22 +61,25 @@ write.csv(shannon_phylum_ITS2, file = "shannon_phylum_ITS2.csv", row.names = TRU
 simpson_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
   data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
 })
-write.csv(simpson_phylum_ITS2, file = "simpson_phylum_ITS2.csv", row.names = TRUE)
 
 
 # Chao1 for Phylum of ITS2
 
 chao_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
 View(chao_phylum_ITS2)
-write.csv(chao_phylum_ITS2, file = "chao1_phylum_ITS2.csv", row.names = TRUE)
 
+# ACE for Phylum of ITS2
+ACE_phylum_ITS2 <- ddply(df_phylum,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_phylum_ITS2 <- merge(shannon_phylum_ITS2, simpson_phylum_ITS2, by = "Samples")
-
+bi_phylum_ITS2 <- merge(shannon_phylum_ITS2, simpson_phylum_ITS2,  by = "Samples")
+bi_phylum_ITS2 <- merge(bi_phylum_ITS2,chao_phylum_ITS2, by = "Samples")
+bi_phylum_ITS2 <- merge(bi_phylum_ITS2,ACE_phylum_ITS2, by = "Samples")
 
 # Export the merged table in excel and .csv
 
