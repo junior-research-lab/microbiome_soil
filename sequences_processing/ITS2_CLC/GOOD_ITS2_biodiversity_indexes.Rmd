@@ -7,26 +7,21 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-library(purrr)
 library(openxlsx)
 library(tidyverse)
 library(vegan)
 library(readr)
 library(readxl)
-library(plyr)
 library(dplyr)
-library(utils)
-library(estimatr)
-library(ggpubr)
-library(iNEXT)
-library(acepack)
+library(fossil)
+library(plyr)
 ```
 
 ```{r import tables}
-df_phylum <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_phylum_reads.xlsx")
-df_order <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_order_reads.xlsx")
-df_family <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_family_reads.xlsx")
-df_gender <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_gender_reads.xlsx")
+df_phylum <- read_excel("ITS2_phylum_reads.xlsx")
+df_order <- read_excel("ITS2_order_reads.xlsx")
+df_family <- read_excel("ITS2_family_reads.xlsx")
+df_gender <- read_excel("ITS2_gender_reads.xlsx")
 
 # Import the S1 table
 
@@ -42,6 +37,11 @@ write.csv(S1_table, file = "S1_table.csv", row.names = TRUE)
 S1_table_ITS2 <- S1_table[-c(3, 4, 10, 18, 24), ]
 
 ```
+
+```{r }
+
+```
+
 
 
 ```{r phylum}
@@ -118,16 +118,6 @@ corr_phy_ITS2_shann$statistic
 corr_phy_ITS2_shann$p.value
 
 # Plot SHANNON for ITS2
-
-ggscatter(phy.ranked.shann, x = "ECe_values", y = "SHANNON",
-            color = "black", shape = 21, size = 3,
-            add = "reg.line", add.params = list(color = "blue", fill = "lightgray"),
-            conf.int = TRUE,
-            cor.coef = TRUE,
-            cor.method = "spearman",
-            xlab = "ECe_value", ylab = "SHANNON") + geom_point()
-
-
 
 # Spearman correlation for SIMPSON
 
@@ -295,13 +285,7 @@ corr_phy_ITS2_sim_R$p.value
 
 
 ```
-```{r}
 
-
-```
-```{r}
-
-```
 
 ```{r order}
 
