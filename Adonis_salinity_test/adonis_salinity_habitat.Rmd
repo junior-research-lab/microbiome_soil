@@ -115,23 +115,17 @@ adonis(bray_otu_bact_wheat ~ ECe_new_value, data = env_data_wheat, strata = env_
 no_zero <- colSums(otu_bact_wheat)
 otu_bact_wheat <- otu_bact_wheat[-c(which(no_zero == 0, arr.ind = TRUE))]
 
-## Calculate the spearman correlation
-ad0_bact_wheat <- as.vector(NULL)
-for (s in 1:ncol(otu_bact_wheat)) {
-  ad_bact_wheat <- cor(x = otu_bact_wheat[,s], y = env_data_wheat$ECe_new_value, method = "spearman" )
-  ad0_bact_wheat <- cbind(ad0_bact_wheat, ad_bact_wheat)
-}
-
 #Other way to calculate the spearman correlation (should work better maybe for the q-values)
-spearman <- Hmisc::rcorr(as.matrix(otu_bact_wheat),env_data_wheat$ECe_new_value, type = "spearman")
+spearman_wheat <- Hmisc::rcorr(as.matrix(otu_bact_wheat),env_data_wheat$ECe_new_value, type = "spearman")
 
 # The second step is to correct the p-values obtained given that the otu can be correlated.
-ad0_bact_wheat_v <- as.vector(ad0_bact_wheat)
-adjusted_wheat <- fdrtool::fdrtool(ad0_bact_wheat_v, "correlation")
-p_val_wheat <- adjusted_wheat["pval"]
+spearman_wheat_v <- as.vector(spearman_wheat[["P"]])
 
-p_val_wheat <- as.matrix(p_val_wheat[[1]])
-colnames(p_val_wheat) <- names(otu_bact_wheat[1:ncol(otu_bact_wheat)])
+# Replace the NA p-value by 1 (sure you won't select them because the p-value is too high)
+spearman_wheat_v[is.na(spearman_wheat_v)] <- FALSE
+
+# ad0_bact_wheat_v <- as.vector(ad0_bact_wheat)
+adjusted_wheat <- fdrtool::fdrtool(spearman_wheat_v, "pvalue")
 
 ```
 
