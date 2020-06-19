@@ -1074,3 +1074,52 @@ kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_R)
 ```
 
 
+```{r otu}
+
+#Import the rarefied table for 16S
+otu <- read.xlsx("16S_rarefied_table.xlsx")
+otu <- mutate(otu, Taxonomy = paste(otu$Domain, otu$Phylum, otu$Class, otu$Order, otu$Family, otu$Gender, otu$Species, sep =";")) %>% 
+  select(-Domain, -Phylum, -Class, -Order, -Family, -Gender, -Species)
+otu <- otu %>% select(Taxonomy, everything())
+
+#Transpose the table
+t_otu <- data.frame(t(otu[-1]))
+colnames(t_otu) <- otu$Taxonomy
+t_otu <- rownames_to_column(t_otu, "Samples")
+
+# Shannon for OTU of 16S
+shannon_otu_16S <- ddply(t_otu,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})
+
+# Simpson for OTU of 16S
+
+simpson_otu_16S <- ddply(t_otu,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+})
+
+# Chao1 for OTU of 16S
+
+chao_otu_16S <- ddply(t_otu,~Samples,function(x) {
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
+})
+
+# ACE for OTU of 16S
+ACE_otu_16S <- ddply(t_otu,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
+
+# Merge biodiversity indexes
+
+bi_otu_16S <- merge(shannon_otu_16S, simpson_otu_16S,  by = "Samples")
+bi_otu_16S <- merge(bi_otu_16S,chao_otu_16S, by = "Samples")
+bi_otu_16S <- merge(bi_otu_16S,ACE_otu_16S, by = "Samples")
+
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_otu_16S,"bi_otu_16S.xlsx")
+write.csv(bi_otu_16S, file = "bi_otu_16S.csv", row.names = TRUE)
+
+```
+

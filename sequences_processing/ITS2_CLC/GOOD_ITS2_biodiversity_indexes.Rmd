@@ -26,7 +26,6 @@ df_gender <- read_excel("ITS2_gender_reads.xlsx")
 # Import the S1 table
 
 S1_table <- read_excel("S1_table.xlsx")
-View(S1_table)
 
 # Change format to .csv
 
@@ -1071,7 +1070,6 @@ kruskal.test(ECe_values~SHANNON, data = gen.ranked.shann_R)
 
 kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_R)
 ```
-```
 
 
 ```{r}
@@ -1079,7 +1077,7 @@ kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_R)
 
 total_phylum <- rbind(shannon_phylum_ITS2, simpson_phylum_ITS2, chao_phylum_ITS2)
 t_total_phylum <- data.frame(t(total_phylum))
-View(t_total_phylum)
+
 
 # Order
 
@@ -1098,6 +1096,55 @@ View(t_total_family)
 total_gender <- rbind(shannon_gender_ITS2, simpson_gender_ITS2, chao_gender_ITS2)
 t_total_gender <- data.frame(t(total_gender))
 View(t_total_gender)
+
+```
+
+```{r otu}
+
+#Import the rarefied table for 16S
+otu <- read.xlsx("ITS2_rarefied_table.xlsx")
+otu <- mutate(otu, Taxonomy = paste(otu$Kingdom, otu$Phylum, otu$Class, otu$Order, otu$Family, otu$Gender, otu$Species, sep =";")) %>% 
+  select(-Kingdom, -Phylum, -Class, -Order, -Family, -Gender, -Species)
+otu <- otu %>% select(Taxonomy, everything())
+
+#Transpose the table
+t_otu <- data.frame(t(otu[-1]))
+colnames(t_otu) <- otu$Taxonomy
+t_otu <- rownames_to_column(t_otu, "Samples")
+
+# Shannon for OTU of ITS2
+shannon_otu_ITS2 <- ddply(t_otu,~Samples,function(x) {
+  data.frame(SHANNON=diversity(x[-1], index = "shannon"))
+})
+
+# Simpson for OTU of ITS2
+
+simpson_otu_ITS2 <- ddply(t_otu,~Samples,function(x) {
+  data.frame(SIMPSON=diversity(x[-1], index = "simpson"))
+})
+
+# Chao1 for OTU of ITS2
+
+chao_otu_ITS2 <- ddply(t_otu,~Samples,function(x) {
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
+})
+
+# ACE for OTU of ITS2
+ACE_otu_ITS2 <- ddply(t_otu,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
+
+# Merge biodiversity indexes
+
+bi_otu_ITS2 <- merge(shannon_otu_ITS2, simpson_otu_ITS2,  by = "Samples")
+bi_otu_ITS2 <- merge(bi_otu_ITS2,chao_otu_ITS2, by = "Samples")
+bi_otu_ITS2 <- merge(bi_otu_ITS2,ACE_otu_ITS2, by = "Samples")
+
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_otu_ITS2,"bi_otu_ITS2.xlsx")
+write.csv(bi_otu_ITS2, file = "bi_otu_ITS2.csv", row.names = TRUE)
 
 ```
 
