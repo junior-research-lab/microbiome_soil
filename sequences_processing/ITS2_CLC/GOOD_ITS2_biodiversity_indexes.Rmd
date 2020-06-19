@@ -7,21 +7,26 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(purrr)
 library(openxlsx)
 library(tidyverse)
 library(vegan)
 library(readr)
 library(readxl)
-library(dplyr)
-library(fossil)
 library(plyr)
+library(dplyr)
+library(utils)
+library(estimatr)
+library(ggpubr)
+library(iNEXT)
+library(acepack)
 ```
 
 ```{r import tables}
-df_phylum <- read_excel("ITS2_phylum_reads.xlsx")
-df_order <- read_excel("ITS2_order_reads.xlsx")
-df_family <- read_excel("ITS2_family_reads.xlsx")
-df_gender <- read_excel("ITS2_gender_reads.xlsx")
+df_phylum <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_phylum_reads.xlsx")
+df_order <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_order_reads.xlsx")
+df_family <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_family_reads.xlsx")
+df_gender <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_gender_reads.xlsx")
 
 # Import the S1 table
 
@@ -37,11 +42,6 @@ write.csv(S1_table, file = "S1_table.csv", row.names = TRUE)
 S1_table_ITS2 <- S1_table[-c(3, 4, 10, 18, 24), ]
 
 ```
-
-```{r }
-
-```
-
 
 
 ```{r phylum}
@@ -107,8 +107,6 @@ phy.ranked.shann <- data.frame(cbind(rank(data_phylum_ITS2$`ECe _values`, ties.m
 
 colnames(phy.ranked.shann) <- c("ECe_values", "SHANNON")
 
-View(phy.ranked.shann)
-
 rho <- cov(phy.ranked.shann) / (sd(phy.ranked.shann$ECe_values) * sd(phy.ranked.shann$SHANNON))
 
 rho[[2]]
@@ -120,6 +118,16 @@ corr_phy_ITS2_shann$statistic
 corr_phy_ITS2_shann$p.value
 
 # Plot SHANNON for ITS2
+
+ggscatter(phy.ranked.shann, x = "ECe_values", y = "SHANNON",
+            color = "black", shape = 21, size = 3,
+            add = "reg.line", add.params = list(color = "blue", fill = "lightgray"),
+            conf.int = TRUE,
+            cor.coef = TRUE,
+            cor.method = "spearman",
+            xlab = "ECe_value", ylab = "SHANNON") + geom_point()
+
+
 
 # Spearman correlation for SIMPSON
 
@@ -234,7 +242,7 @@ S1_table_ITS2_R <- S1_table %>% slice(20:42)
 
 #Merge bi and S1 tables
 data_phylum_ITS2_R <- merge(bi_phylum_ITS2_R, S1_table_ITS2_R, by = "Samples")
-
+View(data_phylum_ITS2_R)
 
 # Spearman correlation for SHANNON
 
@@ -286,8 +294,36 @@ corr_phy_ITS2_sim_R$statistic
 corr_phy_ITS2_sim_R$p.value
 
 
-```
 
+### Kruskal-Wallis test ###
+
+# Phylum ITS2 SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = phy.ranked.shann_B)
+
+# Phylum ITS2 SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_B)
+
+# Phylum ITS2 SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = phy.ranked.shann_R)
+
+# Phylum ITS2 SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_R)
+
+
+
+
+```
+```{r}
+
+
+```
+```{r}
+
+```
 
 ```{r order}
 
@@ -522,6 +558,26 @@ corr_ord_ITS2_sim_R$statistic
 
 corr_ord_ITS2_sim_R$p.value
 
+
+
+### Kruskal-Wallis test ###
+
+# Order ITS2 SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = ord.ranked.shann_B)
+
+# Order ITS2 SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = ord.ranked.sim_B)
+
+# Order ITS2 SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = ord.ranked.shann_R)
+
+# Order ITS2 SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = ord.ranked.sim_R)
+
 ```
 
 ```{r family}
@@ -755,6 +811,26 @@ corr_fam_ITS2_sim_R$estimate
 corr_fam_ITS2_sim_R$statistic
 
 corr_fam_ITS2_sim_R$p.value
+
+
+
+### Kruskal-Wallis test ###
+
+# Family ITS2 SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = fam.ranked.shann_B)
+
+# Family ITS2 SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = fam.ranked.sim_B)
+
+# Family ITS2 SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = fam.ranked.shann_R)
+
+# Family ITS2 SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = fam.ranked.sim_R)
 ```
 
 ```{r gender}
@@ -989,6 +1065,26 @@ corr_gen_ITS2_sim_R$estimate
 corr_gen_ITS2_sim_R$statistic
 
 corr_gen_ITS2_sim_R$p.value
+
+
+
+### Kruskal-Wallis test ###
+
+# Gender ITS2 SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = gen.ranked.shann_B)
+
+# Gender ITS2 SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_B)
+
+# Gender ITS2 SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = gen.ranked.shann_R)
+
+# Gender ITS2 SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_R)
 ```
 ```
 

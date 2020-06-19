@@ -36,7 +36,7 @@ write.csv(S1_table, file = "S1_table.csv", row.names = TRUE)
 
 #Delete the same samples as 16S
 
-S1_table <- S1_table[-c( 4, 11), ]
+S1_table_16S <- S1_table[-c( 4, 11), ]
 ```
 
 ```{r phylum}
@@ -61,11 +61,17 @@ write.csv(simpson_phylum_16S, file = "simpson_phylum_16S.csv", row.names = TRUE)
 
 # Chao1 for Phylum of 16S
 
+chao_phylum_16S <- ddply(df_phylum,~Samples,function(x) {
+  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+})
+View(chao_phylum_16S)
+write.csv(chao_phylum_16S, file = "chao1_phylum_16S.csv", row.names = TRUE)
 
 
 # Merge biodiversity indexes
 
 bi_phylum_16S <- merge(shannon_phylum_16S, simpson_phylum_16S, by = "Samples")
+View(bi_phylum_16S)
 
 
 # Export the merged table in excel and .csv
@@ -77,7 +83,7 @@ write.csv(bi_phylum_16S, file = "bi_phylum_16S.csv", row.names = TRUE)
 # Preparation of data for Spearman correlation
 
 #Merge bi and S1 tables
-data_phylum_16S <- merge(bi_phylum_16S, S1_table, by = "Samples")
+data_phylum_16S <- merge(bi_phylum_16S, S1_table_16S, by = "Samples")
 
 
 # Spearman correlation for SHANNON
@@ -128,6 +134,166 @@ corr_phy_16S_sim$estimate
 corr_phy_16S_sim$statistic
 
 corr_phy_16S_sim$p.value
+
+
+
+#### Only for bulk samples ####
+
+bi_phylum_16S_B <- merge(shannon_phylum_16S, simpson_phylum_16S, by = "Samples") %>% slice(1:22)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_phylum_16S_B,"bi_phylum_16S_B.xlsx")
+write.csv(bi_phylum_16S_B, file = "bi_phylum_16S_B.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for bulk samples
+S1_table_16S_B <- S1_table_16S %>% slice(1:22)
+
+#Merge bi and S1 tables
+data_phylum_16S_B <- merge(bi_phylum_16S_B, S1_table_16S_B, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_phy_16S_shann_B <- cor.test(x=data_phylum_16S_B$`ECe _values`, y=data_phylum_16S_B$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_phy_16S_shann_B
+
+# Manually calculating
+
+phy.ranked.shann_B <- data.frame(cbind(rank(data_phylum_16S_B$`ECe _values`, ties.method = "average"), rank(data_phylum_16S_B$SHANNON, ties.method = "average")))
+
+colnames(phy.ranked.shann_B) <- c("ECe_values", "SHANNON")
+
+rho <- cov(phy.ranked.shann_B) / (sd(phy.ranked.shann_B$ECe_values) * sd(phy.ranked.shann_B$SHANNON))
+
+rho[[2]]
+
+corr_phy_16S_shann_B$estimate
+
+corr_phy_16S_shann_B$statistic
+
+corr_phy_16S_shann_B$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_phy_16S_sim_B <- cor.test(x=data_phylum_16S_B$`ECe _values`, y=data_phylum_16S_B$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_phy_16S_sim_B
+
+# Manually calculating
+
+phy.ranked.sim_B <- data.frame(cbind(rank(data_phylum_16S_B$`ECe _values`, ties.method = "average"), rank(data_phylum_16S_B$SIMPSON, ties.method = "average")))
+
+colnames(phy.ranked.sim_B) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(phy.ranked.sim_B) / (sd(phy.ranked.sim_B$ECe_values) * sd(phy.ranked.sim_B$SIMPSON))
+
+rho[[2]]
+
+corr_phy_16S_sim_B$estimate
+
+corr_phy_16S_sim_B$statistic
+
+corr_phy_16S_sim_B$p.value
+
+
+#### Only for rhizospheric samples ####
+
+bi_phylum_16S_R <- merge(shannon_phylum_16S, simpson_phylum_16S, by = "Samples") %>% slice(23:46)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_phylum_16S_R,"bi_phylum_16S_R.xlsx")
+write.csv(bi_phylum_16S_R, file = "bi_phylum_16S_R.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for rhizosphere samples
+S1_table_16S_R <- S1_table_16S %>% slice(23:46)
+
+#Merge bi and S1 tables
+data_phylum_16S_R <- merge(bi_phylum_16S_R, S1_table_16S_R, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_phy_16S_shann_R <- cor.test(x=data_phylum_16S_R$`ECe _values`, y=data_phylum_16S_R$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_phy_16S_shann_R
+
+# Manually calculating
+
+phy.ranked.shann_R <- data.frame(cbind(rank(data_phylum_16S_R$`ECe _values`, ties.method = "average"), rank(data_phylum_16S_R$SHANNON, ties.method = "average")))
+
+colnames(phy.ranked.shann_R) <- c("ECe_values", "SHANNON")
+
+rho <- cov(phy.ranked.shann_R) / (sd(phy.ranked.shann_R$ECe_values) * sd(phy.ranked.shann_R$SHANNON))
+
+rho[[2]]
+
+corr_phy_16S_shann_R$estimate
+
+corr_phy_16S_shann_R$statistic
+
+corr_phy_16S_shann_R$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_phy_16S_sim_R <- cor.test(x=data_phylum_16S_R$`ECe _values`, y=data_phylum_16S_R$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_phy_16S_sim_R
+
+# Manually calculating
+
+phy.ranked.sim_R <- data.frame(cbind(rank(data_phylum_16S_R$`ECe _values`, ties.method = "average"), rank(data_phylum_16S_R$SIMPSON, ties.method = "average")))
+
+colnames(phy.ranked.sim_R) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(phy.ranked.sim_R) / (sd(phy.ranked.sim_R$ECe_values) * sd(phy.ranked.sim_R$SIMPSON))
+
+rho[[2]]
+
+corr_phy_16S_sim_R$estimate
+
+corr_phy_16S_sim_R$statistic
+
+corr_phy_16S_sim_R$p.value
+
+
+
+### Kruskal-Wallis test ###
+
+# Phylum 16S SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = phy.ranked.shann_B)
+
+# Phylum 16S SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_B)
+
+# Phylum 16S SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = phy.ranked.shann_R)
+
+# Phylum 16S SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_R)
+
 ```
 
 ```{r order}
@@ -148,6 +314,12 @@ simpson_order_16S <- ddply(df_order,~Samples,function(x) {
 write.csv(simpson_order_16S, file = "simpson_order_16S.csv", row.names = TRUE)
 
 # Chao1 for Order of 16S
+
+chao_order_16S <- ddply(df_order,~Samples,function(x) {
+  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+})
+View(chao_order_16S)
+write.csv(chao_order_16S, file = "chao1_order_16S.csv", row.names = TRUE)
 
 
 
@@ -216,6 +388,166 @@ corr_order_16S_sim$estimate
 corr_order_16S_sim$statistic
 
 corr_order_16S_sim$p.value
+
+
+
+#### Only for bulk samples ####
+
+bi_order_16S_B <- merge(shannon_order_16S, simpson_order_16S, by = "Samples") %>% slice(1:22)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_order_16S_B,"bi_order_16S_B.xlsx")
+write.csv(bi_order_16S_B, file = "bi_order_16S_B.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for bulk samples
+S1_table_16S_B <- S1_table_16S %>% slice(1:22)
+
+#Merge bi and S1 tables
+data_order_16S_B <- merge(bi_order_16S_B, S1_table_16S_B, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_ord_16S_shann_B <- cor.test(x=data_order_16S_B$`ECe _values`, y=data_order_16S_B$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_ord_16S_shann_B
+
+# Manually calculating
+
+ord.ranked.shann_B <- data.frame(cbind(rank(data_order_16S_B$`ECe _values`, ties.method = "average"), rank(data_order_16S_B$SHANNON, ties.method = "average")))
+
+colnames(ord.ranked.shann_B) <- c("ECe_values", "SHANNON")
+
+rho <- cov(ord.ranked.shann_B) / (sd(ord.ranked.shann_B$ECe_values) * sd(ord.ranked.shann_B$SHANNON))
+
+rho[[2]]
+
+corr_ord_16S_shann_B$estimate
+
+corr_ord_16S_shann_B$statistic
+
+corr_ord_16S_shann_B$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_ord_16S_sim_B <- cor.test(x=data_order_16S_B$`ECe _values`, y=data_order_16S_B$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_ord_16S_sim_B
+
+# Manually calculating
+
+ord.ranked.sim_B <- data.frame(cbind(rank(data_order_16S_B$`ECe _values`, ties.method = "average"), rank(data_order_16S_B$SIMPSON, ties.method = "average")))
+
+colnames(ord.ranked.sim_B) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(ord.ranked.sim_B) / (sd(ord.ranked.sim_B$ECe_values) * sd(ord.ranked.sim_B$SIMPSON))
+
+rho[[2]]
+
+corr_ord_16S_sim_B$estimate
+
+corr_ord_16S_sim_B$statistic
+
+corr_ord_16S_sim_B$p.value
+
+
+#### Only for rhizospheric samples ####
+
+bi_order_16S_R <- merge(shannon_order_16S, simpson_order_16S, by = "Samples") %>% slice(23:46)
+View(bi_order_16S_R)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_order_16S_R,"bi_order_16S_R.xlsx")
+write.csv(bi_order_16S_R, file = "bi_order_16S_R.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for rhizosphere samples
+S1_table_16S_R <- S1_table_16S %>% slice(23:46)
+
+#Merge bi and S1 tables
+data_order_16S_R <- merge(bi_order_16S_R, S1_table_16S_R, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_ord_16S_shann_R <- cor.test(x=data_order_16S_R$`ECe _values`, y=data_order_16S_R$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_ord_16S_shann_R
+
+# Manually calculating
+
+ord.ranked.shann_R <- data.frame(cbind(rank(data_order_16S_R$`ECe _values`, ties.method = "average"), rank(data_order_16S_R$SHANNON, ties.method = "average")))
+
+colnames(ord.ranked.shann_R) <- c("ECe_values", "SHANNON")
+
+rho <- cov(ord.ranked.shann_R) / (sd(ord.ranked.shann_R$ECe_values) * sd(ord.ranked.shann_R$SHANNON))
+
+rho[[2]]
+
+corr_ord_16S_shann_R$estimate
+
+corr_ord_16S_shann_R$statistic
+
+corr_ord_16S_shann_R$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_ord_16S_sim_R <- cor.test(x=data_order_16S_R$`ECe _values`, y=data_order_16S_R$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_ord_16S_sim_R
+
+# Manually calculating
+
+ord.ranked.sim_R <- data.frame(cbind(rank(data_order_16S_R$`ECe _values`, ties.method = "average"), rank(data_order_16S_R$SIMPSON, ties.method = "average")))
+
+colnames(ord.ranked.sim_R) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(ord.ranked.sim_R) / (sd(ord.ranked.sim_R$ECe_values) * sd(ord.ranked.sim_R$SIMPSON))
+
+rho[[2]]
+
+corr_ord_16S_sim_R$estimate
+
+corr_ord_16S_sim_R$statistic
+
+corr_ord_16S_sim_R$p.value
+
+
+
+### Kruskal-Wallis test ###
+
+# Order 16S SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = ord.ranked.shann_B)
+
+# Order 16S SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = ord.ranked.sim_B)
+
+# Order 16S SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = ord.ranked.shann_R)
+
+# Order 16S SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = ord.ranked.sim_R)
 ```
 
 ```{r family}
@@ -236,6 +568,12 @@ simpson_family_16S <- ddply(df_family,~Samples,function(x) {
 write.csv(simpson_family_16S, file = "simpson_family_16S.csv", row.names = TRUE)
 
 # Chao1 for Family of 16S
+
+chao_family_16S <- ddply(df_family,~Samples,function(x) {
+  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+})
+View(chao_family_16S)
+write.csv(chao_family_16S, file = "chao1_family_16S.csv", row.names = TRUE)
 
 
 
@@ -304,6 +642,166 @@ corr_family_16S_sim$estimate
 corr_family_16S_sim$statistic
 
 corr_family_16S_sim$p.value
+
+
+
+#### Only for bulk samples ####
+
+bi_family_16S_B <- merge(shannon_family_16S, simpson_family_16S, by = "Samples") %>% slice(1:22)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_family_16S_B,"bi_family_16S_B.xlsx")
+write.csv(bi_family_16S_B, file = "bi_family_16S_B.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for bulk samples
+S1_table_16S_B <- S1_table_16S %>% slice(1:22)
+
+#Merge bi and S1 tables
+data_family_16S_B <- merge(bi_family_16S_B, S1_table_16S_B, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_fam_16S_shann_B <- cor.test(x=data_family_16S_B$`ECe _values`, y=data_family_16S_B$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_fam_16S_shann_B
+
+# Manually calculating
+
+fam.ranked.shann_B <- data.frame(cbind(rank(data_family_16S_B$`ECe _values`, ties.method = "average"), rank(data_family_16S_B$SHANNON, ties.method = "average")))
+
+colnames(fam.ranked.shann_B) <- c("ECe_values", "SHANNON")
+
+rho <- cov(fam.ranked.shann_B) / (sd(fam.ranked.shann_B$ECe_values) * sd(fam.ranked.shann_B$SHANNON))
+
+rho[[2]]
+
+corr_fam_16S_shann_B$estimate
+
+corr_fam_16S_shann_B$statistic
+
+corr_fam_16S_shann_B$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_fam_16S_sim_B <- cor.test(x=data_family_16S_B$`ECe _values`, y=data_family_16S_B$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_fam_16S_sim_B
+
+# Manually calculating
+
+fam.ranked.sim_B <- data.frame(cbind(rank(data_family_16S_B$`ECe _values`, ties.method = "average"), rank(data_family_16S_B$SIMPSON, ties.method = "average")))
+
+colnames(fam.ranked.sim_B) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(fam.ranked.sim_B) / (sd(fam.ranked.sim_B$ECe_values) * sd(fam.ranked.sim_B$SIMPSON))
+
+rho[[2]]
+
+corr_fam_16S_sim_B$estimate
+
+corr_fam_16S_sim_B$statistic
+
+corr_fam_16S_sim_B$p.value
+
+
+#### Only for rhizospheric samples ####
+
+bi_family_16S_R <- merge(shannon_family_16S, simpson_family_16S, by = "Samples") %>% slice(23:46)
+View(bi_family_16S_R)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_family_16S_R,"bi_family_16S_R.xlsx")
+write.csv(bi_family_16S_R, file = "bi_family_16S_R.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for rhizosphere samples
+S1_table_16S_R <- S1_table_16S %>% slice(23:46)
+
+#Merge bi and S1 tables
+data_family_16S_R <- merge(bi_family_16S_R, S1_table_16S_R, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_fam_16S_shann_R <- cor.test(x=data_family_16S_R$`ECe _values`, y=data_family_16S_R$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_fam_16S_shann_R
+
+# Manually calculating
+
+fam.ranked.shann_R <- data.frame(cbind(rank(data_family_16S_R$`ECe _values`, ties.method = "average"), rank(data_family_16S_R$SHANNON, ties.method = "average")))
+
+colnames(fam.ranked.shann_R) <- c("ECe_values", "SHANNON")
+
+rho <- cov(fam.ranked.shann_R) / (sd(fam.ranked.shann_R$ECe_values) * sd(fam.ranked.shann_R$SHANNON))
+
+rho[[2]]
+
+corr_fam_16S_shann_R$estimate
+
+corr_fam_16S_shann_R$statistic
+
+corr_fam_16S_shann_R$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_fam_16S_sim_R <- cor.test(x=data_family_16S_R$`ECe _values`, y=data_family_16S_R$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_fam_16S_sim_R
+
+# Manually calculating
+
+fam.ranked.sim_R <- data.frame(cbind(rank(data_family_16S_R$`ECe _values`, ties.method = "average"), rank(data_family_16S_R$SIMPSON, ties.method = "average")))
+
+colnames(fam.ranked.sim_R) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(fam.ranked.sim_R) / (sd(fam.ranked.sim_R$ECe_values) * sd(fam.ranked.sim_R$SIMPSON))
+
+rho[[2]]
+
+corr_fam_16S_sim_R$estimate
+
+corr_fam_16S_sim_R$statistic
+
+corr_fam_16S_sim_R$p.value
+
+
+
+### Kruskal-Wallis test ###
+
+# Family 16S SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = fam.ranked.shann_B)
+
+# Family 16S SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = fam.ranked.sim_B)
+
+# Family 16S SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = fam.ranked.shann_R)
+
+# Family 16S SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = fam.ranked.sim_R)
 ```
 
 ```{r gender}
@@ -325,6 +823,11 @@ write.csv(simpson_gender_16S, file = "simpson_gender_16S.csv", row.names = TRUE)
 
 # Chao1 for Gender of 16S
 
+chao_gender_16S <- ddply(df_gender,~Samples,function(x) {
+  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+})
+View(chao_gender_16S)
+write.csv(chao_gender_16S, file = "chao1_gender_16S.csv", row.names = TRUE)
 
 
 
@@ -393,6 +896,166 @@ corr_gender_16S_sim$estimate
 corr_gender_16S_sim$statistic
 
 corr_gender_16S_sim$p.value
+
+
+
+#### Only for bulk samples ####
+
+bi_gender_16S_B <- merge(shannon_gender_16S, simpson_gender_16S, by = "Samples") %>% slice(1:22)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_gender_16S_B,"bi_gender_16S_B.xlsx")
+write.csv(bi_gender_16S_B, file = "bi_gender_16S_B.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for bulk samples
+S1_table_16S_B <- S1_table_16S %>% slice(1:22)
+
+#Merge bi and S1 tables
+data_gender_16S_B <- merge(bi_gender_16S_B, S1_table_16S_B, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_gen_16S_shann_B <- cor.test(x=data_gender_16S_B$`ECe _values`, y=data_gender_16S_B$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_gen_16S_shann_B
+
+# Manually calculating
+
+gen.ranked.shann_B <- data.frame(cbind(rank(data_gender_16S_B$`ECe _values`, ties.method = "average"), rank(data_gender_16S_B$SHANNON, ties.method = "average")))
+
+colnames(gen.ranked.shann_B) <- c("ECe_values", "SHANNON")
+
+rho <- cov(gen.ranked.shann_B) / (sd(gen.ranked.shann_B$ECe_values) * sd(gen.ranked.shann_B$SHANNON))
+
+rho[[2]]
+
+corr_gen_16S_shann_B$estimate
+
+corr_gen_16S_shann_B$statistic
+
+corr_gen_16S_shann_B$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_gen_16S_sim_B <- cor.test(x=data_gender_16S_B$`ECe _values`, y=data_gender_16S_B$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_gen_16S_sim_B
+
+# Manually calculating
+
+gen.ranked.sim_B <- data.frame(cbind(rank(data_gender_16S_B$`ECe _values`, ties.method = "average"), rank(data_gender_16S_B$SIMPSON, ties.method = "average")))
+
+colnames(gen.ranked.sim_B) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(gen.ranked.sim_B) / (sd(gen.ranked.sim_B$ECe_values) * sd(gen.ranked.sim_B$SIMPSON))
+
+rho[[2]]
+
+corr_gen_16S_sim_B$estimate
+
+corr_gen_16S_sim_B$statistic
+
+corr_gen_16S_sim_B$p.value
+
+
+#### Only for rhizospheric samples ####
+
+bi_gender_16S_R <- merge(shannon_gender_16S, simpson_gender_16S, by = "Samples") %>% slice(23:46)
+View(bi_gender_16S_R)
+
+# Export the merged table in excel and .csv
+
+write.xlsx(bi_gender_16S_R,"bi_gender_16S_R.xlsx")
+write.csv(bi_gender_16S_R, file = "bi_gender_16S_R.csv", row.names = TRUE)
+
+
+# Preparation of data for Spearman correlation
+
+#S1 table for rhizosphere samples
+S1_table_16S_R <- S1_table_16S %>% slice(23:46)
+
+#Merge bi and S1 tables
+data_gender_16S_R <- merge(bi_gender_16S_R, S1_table_16S_R, by = "Samples")
+
+
+# Spearman correlation for SHANNON
+
+corr_gen_16S_shann_R <- cor.test(x=data_gender_16S_R$`ECe _values`, y=data_gender_16S_R$SHANNON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_gen_16S_shann_R
+
+# Manually calculating
+
+gen.ranked.shann_R <- data.frame(cbind(rank(data_gender_16S_R$`ECe _values`, ties.method = "average"), rank(data_gender_16S_R$SHANNON, ties.method = "average")))
+
+colnames(gen.ranked.shann_R) <- c("ECe_values", "SHANNON")
+
+rho <- cov(gen.ranked.shann_R) / (sd(gen.ranked.shann_R$ECe_values) * sd(gen.ranked.shann_R$SHANNON))
+
+rho[[2]]
+
+corr_gen_16S_shann_R$estimate
+
+corr_gen_16S_shann_R$statistic
+
+corr_gen_16S_shann_R$p.value
+
+
+# Spearman correlation for SIMPSON
+
+corr_gen_16S_sim_R <- cor.test(x=data_gender_16S_R$`ECe _values`, y=data_gender_16S_R$SIMPSON, method = "spearman")
+
+#Cannot compute exact p-value with ties
+
+corr_gen_16S_sim_R
+
+# Manually calculating
+
+gen.ranked.sim_R <- data.frame(cbind(rank(data_gender_16S_R$`ECe _values`, ties.method = "average"), rank(data_gender_16S_R$SIMPSON, ties.method = "average")))
+
+colnames(gen.ranked.sim_R) <- c("ECe_values", "SIMPSON")
+
+rho <- cov(gen.ranked.sim_R) / (sd(gen.ranked.sim_R$ECe_values) * sd(gen.ranked.sim_R$SIMPSON))
+
+rho[[2]]
+
+corr_gen_16S_sim_R$estimate
+
+corr_gen_16S_sim_R$statistic
+
+corr_gen_16S_sim_R$p.value
+
+
+
+### Kruskal-Wallis test ###
+
+# Gender 16S SHANNON in bulk samples
+
+kruskal.test(ECe_values~SHANNON, data = gen.ranked.shann_B)
+
+# Gender 16S SIMPSON in bulk samples
+
+kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_B)
+
+# Gender 16S SHANNON in rhizospheric samples
+
+kruskal.test(ECe_values~SHANNON, data = gen.ranked.shann_R)
+
+# Gender 16S SIMPSON in rhizospheric samples
+
+kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_R)
 ```
 
 ## R Markdown
