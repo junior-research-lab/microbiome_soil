@@ -14,19 +14,14 @@ library(vegan)
 library(readr)
 library(readxl)
 library(plyr)
-library(dplyr)
-library(utils)
-library(estimatr)
-library(ggpubr)
-library(iNEXT)
-library(acepack)
+library(fossil)
 ```
 
 ```{r import tables}
-df_phylum <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_phylum_reads.xlsx")
-df_order <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_order_reads.xlsx")
-df_family <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_family_reads.xlsx")
-df_gender <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/ITS2_gender_reads.xlsx")
+df_phylum <- read_excel("ITS2_phylum_reads.xlsx")
+df_order <- read_excel("ITS2_order_reads.xlsx")
+df_family <- read_excel("ITS2_family_reads.xlsx")
+df_gender <- read_excel("ITS2_gender_reads.xlsx")
 
 # Import the S1 table
 

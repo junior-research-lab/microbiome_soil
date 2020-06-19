@@ -14,20 +14,18 @@ library(vegan)
 library(readr)
 library(readxl)
 library(plyr)
-library(utils)
-library(estimatr)
-library(ggpubr)
+library(fossil)
 ```
 
 ```{r import tables}
-df_phylum <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/16S/16S_results/16S_phylum_reads.xlsx")
-df_order <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/16S/16S_results/16S_order_reads.xlsx")
-df_family <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/16S/16S_results/16S_family_reads.xlsx")
-df_gender <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/16S/16S_results/16S_gender_reads.xlsx")
+df_phylum <- read_excel("16S_phylum_reads.xlsx")
+df_order <- read_excel("16S_order_reads.xlsx")
+df_family <- read_excel("16S_family_reads.xlsx")
+df_gender <- read_excel("16S_gender_reads.xlsx")
 
 # Import the S1 table
 
-S1_table <- read_excel("C:/Users/amapo/Documents/GitHub/microbiome_soil/sequences_processing/ITS2_CLC/S1_table.xlsx")
+S1_table <- read_excel("S1_table.xlsx")
 View(S1_table)
 
 # Change format to .csv
@@ -62,16 +60,20 @@ write.csv(simpson_phylum_16S, file = "simpson_phylum_16S.csv", row.names = TRUE)
 # Chao1 for Phylum of 16S
 
 chao_phylum_16S <- ddply(df_phylum,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_phylum_16S)
-write.csv(chao_phylum_16S, file = "chao1_phylum_16S.csv", row.names = TRUE)
 
+
+# ACE for Phylum of 16S
+ACE_phylum_16S <- ddply(df_phylum,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_phylum_16S <- merge(shannon_phylum_16S, simpson_phylum_16S, by = "Samples")
-View(bi_phylum_16S)
+bi_phylum_16S <- merge(shannon_phylum_16S, simpson_phylum_16S,  by = "Samples")
+bi_phylum_16S <- merge(bi_phylum_16S,chao_phylum_16S, by = "Samples")
+bi_phylum_16S <- merge(bi_phylum_16S,ACE_phylum_16S, by = "Samples")
 
 
 # Export the merged table in excel and .csv
@@ -296,6 +298,9 @@ kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_R)
 
 ```
 
+
+
+
 ```{r order}
 # Order of 16S
 
@@ -316,16 +321,20 @@ write.csv(simpson_order_16S, file = "simpson_order_16S.csv", row.names = TRUE)
 # Chao1 for Order of 16S
 
 chao_order_16S <- ddply(df_order,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_order_16S)
-write.csv(chao_order_16S, file = "chao1_order_16S.csv", row.names = TRUE)
 
 
+# ACE for Phylum of 16S
+ACE_order_16S <- ddply(df_order,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_order_16S <- merge(shannon_order_16S, simpson_order_16S, by = "Samples")
+bi_order_16S <- merge(shannon_order_16S, simpson_order_16S,  by = "Samples")
+bi_order_16S <- merge(bi_order_16S,chao_order_16S, by = "Samples")
+bi_order_16S <- merge(bi_order_16S,ACE_order_16S, by = "Samples")
 
 
 # Export the merged table in excel and .csv
@@ -567,19 +576,22 @@ simpson_family_16S <- ddply(df_family,~Samples,function(x) {
 })
 write.csv(simpson_family_16S, file = "simpson_family_16S.csv", row.names = TRUE)
 
-# Chao1 for Family of 16S
+# Chao1 for family of 16S
 
 chao_family_16S <- ddply(df_family,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_family_16S)
-write.csv(chao_family_16S, file = "chao1_family_16S.csv", row.names = TRUE)
 
-
+# ACE for Phylum of ITS2
+ACE_family_16S <- ddply(df_family,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_family_16S <- merge(shannon_family_16S, simpson_family_16S, by = "Samples")
+bi_family_16S <- merge(shannon_family_16S, simpson_family_16S,  by = "Samples")
+bi_family_16S <- merge(bi_family_16S,chao_family_16S, by = "Samples")
+bi_family_16S <- merge(bi_family_16S,ACE_family_16S, by = "Samples")
 
 
 # Export the merged table in excel and .csv
@@ -821,19 +833,22 @@ simpson_gender_16S <- ddply(df_gender,~Samples,function(x) {
 })
 write.csv(simpson_gender_16S, file = "simpson_gender_16S.csv", row.names = TRUE)
 
-# Chao1 for Gender of 16S
+# Chao1 for family of 16S
 
 chao_gender_16S <- ddply(df_gender,~Samples,function(x) {
-  data.frame(chao1=estimateR(x[-1], index = "chao1"))
+  data.frame(chao1 =chao1(x[-1], taxa.row = FALSE))
 })
-View(chao_gender_16S)
-write.csv(chao_gender_16S, file = "chao1_gender_16S.csv", row.names = TRUE)
 
-
+# ACE for Phylum of 16S
+ACE_gender_16S <- ddply(df_gender,~Samples,function(x) {
+  data.frame(ACE = ACE(x[-1], taxa.row = FALSE))
+})
 
 # Merge biodiversity indexes
 
-bi_gender_16S <- merge(shannon_gender_16S, simpson_gender_16S, by = "Samples")
+bi_gender_16S <- merge(shannon_gender_16S, simpson_gender_16S,  by = "Samples")
+bi_gender_16S <- merge(bi_gender_16S,chao_gender_16S, by = "Samples")
+bi_gender_16S <- merge(bi_gender_16S,ACE_gender_16S, by = "Samples")
 
 
 # Export the merged table in excel and .csv
@@ -1058,22 +1073,4 @@ kruskal.test(ECe_values~SHANNON, data = gen.ranked.shann_R)
 kruskal.test(ECe_values~SIMPSON, data = gen.ranked.sim_R)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
-```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
