@@ -1,0 +1,126 @@
+---
+title: "Krustal_Wallis_test_biodiv_otu"
+author: "JRL"
+date: "19/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readxl)
+library(ggplot2)
+library(dplyr)
+```
+
+```{r set_table_1}
+
+
+
+# Import the otu tables values
+otu <- read_csv2("OTU_number_replicate.csv", skip = 1)
+otu <- rename(otu, "OTU_number" = "OTU number")
+otu_fungi <- otu[1:43,]
+otu_bact <- otu[45:90,]
+
+#Create a variable to group the observations by the habitat
+df_bact <- read_csv(file = "bi_otu_16S.csv")
+df_bact <- separate(data = df_bact, col = "Samples", into = c("Type_soil","Sample_nb", "Replicate"), sep = "_", remove = FALSE)
+df_bact$Group <- paste(df_bact$Type_soil, df_bact$Sample_nb, sep="_")
+
+df_fungi <- read_csv(file = "bi_otu_ITS2.csv")
+df_fungi <- separate(data = df_fungi, col = "Samples", into = c("Type_soil","Sample_nb", "Replicate"), sep = "_", remove = FALSE)
+df_fungi$Group <- paste(df_fungi$Type_soil, df_fungi$Sample_nb, sep="_")
+
+# Merge the OTU values with the biodiversity indexes
+df_fungi <- merge(df_fungi, otu_fungi, by.x = "Samples", by.y = "Replicate")
+df_bact <- merge(df_bact, otu_fungi, by.x = "Samples", by.y = "Replicate")
+
+
+```
+
+
+```{r tests}
+
+## BACTERIES
+test_bact_otu <- rstatix::wilcox_test(df_bact, OTU_number ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_bact_otu %>% filter( p.adj <=0.05))
+
+test_bact_shann <- rstatix::wilcox_test(df_bact,SHANNON ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_bact_shann %>% filter( p.adj <=0.05))
+
+test_bact_simp <- rstatix::wilcox_test(df_bact,SIMPSON ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_bact_simp %>% filter( p.adj <=0.05))
+
+test_bact_chao <- rstatix::wilcox_test(df_bact, chao1 ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_bact_chao %>% filter( p.adj <=0.05))
+
+test_bact_ace <- rstatix::wilcox_test(df_bact, ACE ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_bact_ace %>% filter( p.adj <=0.05))
+
+## FUNGI
+
+test_fungi_otu <- rstatix::wilcox_test(df_fungi, OTU_number ~ Group, p.adjust.method = "BH") %>%
+  rstatix::add_significance()
+(test_fungi_otu %>% filter( p.adj <=0.05))
+
+test_fungi_shann <- rstatix::wilcox_test(df_fungi,SHANNON ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_fungi_shann %>% filter( p.adj <=0.05))
+
+test_fungi_simp <- rstatix::wilcox_test(df_fungi,SIMPSON ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_fungi_simp %>% filter( p.adj <=0.05))
+
+test_fungi_chao <- rstatix::wilcox_test(df_fungi, chao1 ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_fungi_chao %>% filter( p.adj <=0.05))
+
+test_fungi_ace <- rstatix::wilcox_test(df_fungi, ACE ~ Group, p.adjust.method = "BH") %>% 
+  rstatix::add_significance()
+(test_fungi_ace %>% filter( p.adj <=0.05))
+```
+
+No significant differences have been found between the samples within the indexes
+
+```{r test_bulk_rhizo}
+
+## Bacteria
+
+(test_bact_otu2 <- rstatix::wilcox_test(df_bact, OTU_number ~ Type_soil, p.adjust.method = "BH") %>% rstatix::add_significance())
+
+(test_bact_shann2 <- rstatix::wilcox_test(df_bact, SHANNON ~ Type_soil, p.adjust.method = "BH") %>% rstatix::add_significance())
+
+(test_bact_simp2 <- rstatix::wilcox_test(df_bact,SIMPSON ~ Type_soil, p.adjust.method = "BH") %>%
+  rstatix::add_significance())
+
+(test_bact_chao2 <- rstatix::wilcox_test(df_bact, chao1 ~ Type_soil, p.adjust.method = "BH") %>% 
+  rstatix::add_significance())
+
+(test_bact_ace2 <- rstatix::wilcox_test(df_bact, ACE ~ Type_soil, p.adjust.method = "BH") %>% 
+  rstatix::add_significance())
+
+## FUNGI
+
+(test_fungi_otu2 <- rstatix::wilcox_test(df_fungi, OTU_number ~ Type_soil, p.adjust.method = "BH") %>% rstatix::add_significance())
+
+(test_fungi_shann2 <- rstatix::wilcox_test(df_fungi, SHANNON ~ Type_soil, p.adjust.method = "BH") %>% rstatix::add_significance())
+
+(test_fungi_simp2 <- rstatix::wilcox_test(df_fungi,SIMPSON ~ Type_soil, p.adjust.method = "BH") %>%
+  rstatix::add_significance())
+
+(test_fungi_chao2 <- rstatix::wilcox_test(df_fungi, chao1 ~ Type_soil, p.adjust.method = "BH") %>% 
+  rstatix::add_significance())
+
+(test_fungi_ace2 <- rstatix::wilcox_test(df_fungi, ACE ~ Type_soil, p.adjust.method = "BH") %>% 
+  rstatix::add_significance())
+
+```
+
+
+
+

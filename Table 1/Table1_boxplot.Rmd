@@ -1,0 +1,115 @@
+---
+title: "Table1_ boxplot"
+author: "JRL"
+date: "24/06/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(patchwork)
+```
+
+
+```{r import}
+df <- read.csv2("Table1_OTU.csv", sep = ";", skip = 2, dec = ".")
+df <- df[-c(39,40),]
+colnames(df) <- gsub("\\.", "_", colnames(df))
+
+#Create one dataset for the bacteria, another one for the fungi
+df_bact <- df[2:17,]
+df_fungi <- df[21:36,]
+```
+
+```{r split_sample_column}
+
+# We have to split the sample column to create a variable with the type of soil (bulk/rhizosphere)
+
+df_bact <- separate(df_bact, sample_group, into = c("Site", "site_number", "habitat" ), sep = " ", remove = FALSE) %>% 
+  select(-Site)
+df_bact$sample_name <- paste(df_bact$habitat, df_bact$site_number)
+  
+# The same for fungis
+
+df_fungi <- separate(df_fungi, sample_group, into = c("Site", "site_number", "habitat" ), sep = " ", remove = FALSE) %>% 
+  select(-Site)
+df_fungi$sample_name <- paste(df_fungi$habitat, df_fungi$site_number)
+
+```
+
+
+
+```{r boxplot_bact, echo=FALSE}
+
+tiff("Boxplots_indexes_bact.tif", width = 530, height = 480)
+
+df_bact$habitat <- as.factor(df_bact$habitat)
+
+p_otu_nb_bact <- ggplot(data = df_bact, mapping = aes(x = habitat, y = OTU_number__richness_)) +
+  geom_boxplot() +
+  labs(title = "OTU number boxplot", x = "Habitat", y = "OTU number", tag = "A") +
+  theme(plot.tag = element_text(size = 11, vjust = 0.8), plot.title = element_text(size = 11, face = "bold"))
+
+p_shann_bact <-  ggplot(data = df_bact, mapping = aes(x = habitat, y = Shannon__s_index__diversity_)) +
+  geom_boxplot() + 
+  labs(title = "Shannon index boxplot", x = "Habitat",  y = "Shannon index", tag = "B") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+p_simp_bact <-  ggplot(data = df_bact, mapping = aes(x = habitat, y = Simpson__s_index__diversity_)) +
+  geom_boxplot() +
+  labs(title = "Simpson index boxplot", x = "Habitat", y = "Simpson index", tag = "C") +
+  theme(plot.tag = element_text(size = 11,vjust = 1, hjust = 1), plot.title = element_text(size = 11, face = "bold"))
+
+p_chao_bact <-  ggplot(data = df_bact, mapping = aes(x = habitat, y = Chao1__richness_)) +
+  geom_boxplot() + 
+  labs(title = "Chao1 index boxplot", x = "Habitat", y = "Chao1 index", tag = "D") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+p_ace_bact <-  ggplot(data = df_bact, mapping = aes(x = habitat, y = ACE__richness_)) +
+  geom_boxplot() + 
+  labs(title = "ACE index boxplot", x = "Habitat", y = "ACE index", tag = "E") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+(p_otu_nb_bact + p_shann_bact + p_simp_bact + p_chao_bact + p_ace_bact )
+
+dev.off()
+```
+
+```{r boxplot_fungi}
+
+tiff("Boxplots_indexes_fungi.tif", width = 530, height = 480)
+
+df_fungi$habitat <- as.factor(df_fungi$habitat)
+
+p_otu_nb_fungi <- ggplot(data = df_fungi, mapping = aes(x = habitat, y = OTU_number__richness_)) +
+  geom_boxplot() +
+  labs(title = "OTU number boxplot", x = "Habitat", y = "OTU number", tag = "A") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+p_shann_fungi <-  ggplot(data = df_fungi, mapping = aes(x = habitat, y = Shannon__s_index__diversity_)) +
+  geom_boxplot() + 
+  labs(title = "Shannon index boxplot", x = "Habitat",  y = "Shannon index", tag = "B") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+p_simp_fungi <-  ggplot(data = df_fungi, mapping = aes(x = habitat, y = Simpson__s_index__diversity_)) +
+  geom_boxplot() +
+  labs(title = "Simpson index boxplot", x = "Habitat", y = "Simpson index", tag = "C") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+p_chao_fungi <-  ggplot(data = df_fungi, mapping = aes(x = habitat, y = Chao1__richness_)) +
+  geom_boxplot() + 
+  labs(title = "Chao1 index boxplot", x = "Habitat", y = "Chao1 index", tag = "D") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+p_ace_fungi <-  ggplot(data = df_fungi, mapping = aes(x = habitat, y = ACE__richness_)) +
+  geom_boxplot() + 
+  labs(title = "ACE index boxplot", x = "Habitat", y = "ACE index", tag = "E") +
+  theme(plot.tag = element_text(size = 11), plot.title = element_text(size = 11, face = "bold"))
+
+(p_otu_nb_fungi + p_shann_fungi + p_simp_fungi + p_chao_fungi + p_ace_fungi )
+
+dev.off()
+```
+
