@@ -1153,7 +1153,7 @@ corr_fam_ITS2_shann_R$statistic
 corr_fam_ITS2_shann_R$p.value
 
 
-# Spearman correlation for SIMPSON
+####### Spearman correlation for SIMPSON ######
 
 corr_fam_ITS2_sim_R <- cor.test(x=data_family_ITS2_R$ECe_values, y=data_family_ITS2_R$SIMPSON, method = "spearman")
 
