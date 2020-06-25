@@ -14,6 +14,7 @@ library(vegan)
 library(readr)
 library(dplyr)
 library(fossil)
+library(patchwork)
 ```
 
 ```{r import tables}
@@ -260,7 +261,7 @@ corr_phy_16S_chao_B <- cor.test(x=data_phylum_16S_B$ECe_values, y=data_phylum_16
 
 #Cannot compute exact p-value with ties
 
-corr_phy_16S_chao
+corr_phy_16S_chao_B
 
 # Manually calculating
 
@@ -440,7 +441,19 @@ kruskal.test(ECe_values~SIMPSON, data = phy.ranked.sim_R)
 
 #### Plots
 
-ggplot(data = phy.ranked.sim_R, mapping =aes(x = ECe_values, y = SIMPSON)) + geom_point() + geom_smooth()
+tiff("Correlation_chao1_ACE_16S_phylum.tif")
+
+chao_plot <- ggplot(data = phy.ranked.chao_R, mapping =aes(x = ECe_values, y = chao1)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "Chao1 and ECe correlation trend", x = "ECe (dS/m)", y = "Chao1", tag = "A" )
+ace_plot <- ggplot(data = phy.ranked.ace_R, mapping =aes(x = ECe_values, y = ACE)) +
+  geom_point() +
+  geom_smooth() +
+  labs(title = "ACE and ECe correlation trend", x = "ECe (dS/m)", tag = "B" )
+(chao_plot +ace_plot)
+
+dev.off()
 
 ```
 
